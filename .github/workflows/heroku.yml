@@ -13,21 +13,18 @@ jobs:
   release:
     runs-on: ubuntu-16.04
 
-    steps:
-      - name: Install pre-reqs
-        run: sudo apt-get install ca-certificates
-      
+    steps:      
       - name: Heroku login
-        uses: actions/heroku@1.0.0
+        uses: actions/heroku@master
         with:
           args: container:login
 
       - name: Heroku push
-        uses: actions/heroku@1.0.0
+        uses: actions/heroku@master
         with:
           args: container:push -a hazard-analysis web
 
       - name: Heroku release
-        uses: actions/heroku@1.0.0
+        uses: actions/heroku@master
         with:
           args: container:release -a hazard-analysis web

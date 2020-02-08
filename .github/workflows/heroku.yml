@@ -13,7 +13,8 @@ jobs:
   release:
     runs-on: ubuntu-16.04
 
-    steps:      
+    steps:
+      - uses: actions/checkout@v1      
       - name: Heroku login
         uses: actions/heroku@master
         with:

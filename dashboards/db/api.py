@@ -6,9 +6,10 @@ from pymongo import MongoClient
 
 
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
-DB_URI = (f'mongodb://trejo:{DB_PASSWORD}@ds333238.mlab.com:33238'
-          '/heroku_2c1mks3g?retryWrites=false')
-DB_NAME = 'heroku_2c1mks3g'
+DB_USER = os.environ.get('DB_USER')
+DB_NAME = os.environ.get('DB_NAME')
+DB_URI = (f'mongodb://{DB_USER}:{DB_PASSWORD}@ds045897.mlab.com:45897'
+          f'/{DB_NAME}?retryWrites=false')
 
 
 def find(collection, search={}, projection=None):

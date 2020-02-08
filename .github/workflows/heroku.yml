@@ -10,22 +10,22 @@ env:
   HEROKU_API_KEY:  ${{ secrets.HEROKU_API_KEY }} 
 
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
+  release:
+    runs-on: ubuntu-16.04
 
     steps:
-       - name: Heroku login
-         uses: actions/heroku@1.0.0
-         with:
-           args: container:login
-       
-       - name: Heroku push
-         uses: actions/heroku@1.0.0
-         with:
-           args: container:push -a hazard-analysis web
-       
-       - name: Heroku release
-         uses: actions/heroku@1.0.0
-         with:
-           args: container:release -a hazard-analysis web
+      - uses: actions/checkout@v1
+      - name: Heroku login
+        uses: actions/heroku@1.0.0
+        with:
+          args: container:login
+
+      - name: Heroku push
+        uses: actions/heroku@1.0.0
+        with:
+          args: container:push -a hazard-analysis web
+
+      - name: Heroku release
+        uses: actions/heroku@1.0.0
+        with:
+          args: container:release -a hazard-analysis web

@@ -245,8 +245,6 @@ def make_summary_plot(flammability_data, x_axis, y_axis, x_label, y_label):
     data = []
     x_axis = x_axis or 'phi'
     y_axis = y_axis or 'Su'
-    x_label = x_label or 'Equivalence Ratio'
-    y_label = y_label or 'Laminar Flame Speed'
 
     flammability_data = json.loads(flammability_data)
 
@@ -267,10 +265,6 @@ def make_summary_plot(flammability_data, x_axis, y_axis, x_label, y_label):
         ]
 
     layout = copy.deepcopy(plot_layout)
-    layout['title'] = f'{y_label} vs. {x_label}'
-    layout['xaxis'] = dict(title={'text': x_label})
-    layout['yaxis'] = dict(title={'text': y_label})
-
     figure = dict(data=data, layout=layout)
     return figure
 

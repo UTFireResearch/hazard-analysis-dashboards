@@ -108,7 +108,7 @@ layout = html.Div(
                         ),
                         html.Label(
                             [
-                                'Vent Drag Coefficient (Cd):',
+                                'Vent Discharge Coefficient:',
                                 dcc.Input(
                                     id="vent_drag",
                                     type="number",

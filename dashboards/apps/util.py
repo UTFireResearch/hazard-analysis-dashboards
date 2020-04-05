@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import base64
+import io
 import json
 
+import dash_html_components as html
+import dash_table
+import pandas as pd
+
 from db.api import find
+
 
 # Constants
 CANTERA_GASES = ['CO2', 'CO', 'H2', 'CH4', 'C2H4', 'C2H6', 'C3H8', 'N2', 'O2',
@@ -96,11 +103,48 @@ def make_unique_id(experiment):
     experiment.pop('Electrolyte')
     experiment.pop('Format')
 
-    id = []
+    _id = []
     for value in experiment.values():
         value = str(value)
         value = value.lower()
         value = value.replace(',', '')
-        id.append('-'.join(value.split()))
+        _id.append('-'.join(value.split()))
 
-    return '-'.join(id)
+    return '-'.join(_id)
+
+
+def parse_contents(contents, filename, date):
+    """ Parse the contents of a csv or xls file. """
+    content_type, content_string = contents.split(',')
+
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+    except Exception as e:
+        print(e)
+        return html.Div([
+            'There was an error processing this file.'
+        ])
+
+    return html.Div([
+        html.H5(filename),
+        dash_table.DataTable(
+            id='upload_table',
+            data=df.to_dict('records'),
+            columns=[{'name': i, 'id': i} for i in df.columns],
+            fixed_rows={'headers': True, 'data': 0},
+            style_table={
+                'overflowX': 'scroll',
+                'overflowY': 'scroll',
+                'maxHeight': '300px',
+            }
+        ),
+
+        html.Hr(),  # horizontal line
+    ])

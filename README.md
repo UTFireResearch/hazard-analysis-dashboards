@@ -85,23 +85,44 @@ the database administrator to get the values.
 
 To set these variables, do the following:
 
-1) After the fire environment has been activated. Enter the following, replacing
-'my_var' and 'value' with the above variable names and the appropriate value.
+1) In bash (or Anaconda Prompt on Windows), enter the following commands.
 
 ```bash
-$ conda env config vars set my_var=value
+$ cd %CONDA_PREFIX%
+
+$ mkdir .\etc\conda\activate.d
+
+$ mkdir .\etc\conda\deactivate.d
+
+$ type NUL > .\etc\conda\activate.d\env_vars.bat
+
+$ type NUL > .\etc\conda\deactivate.d\env_vars.bat
 ```
-2) Restart the environment to let the new variables take effect.
+
+2) Edit `.\etc\conda\activate.d\env_vars.bat` 
+
+```
+set DB_NAME = 'your value'
+set DB_USER = 'your value'
+set DB_PASSWORD = 'your value'
+set MONGODB_URI = 'your value'
+```
+
+3) Edit `.\etc\conda\deactivate.d\env_vars.bat`
+
+```
+set DB_NAME = 
+set DB_USER = 
+set DB_PASSWORD = 
+set MONGODB_URI = 
+```
+
+4) Reactivate the environment to let the changes take effect.
 
 ```bash
 $ conda activate fire
 ```
 
-3) Check that all the variables have taken effect.
-
-```bash
-$ conda env config vars list
-```
 
 ## Launching the Web App Locally
 

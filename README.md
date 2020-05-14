@@ -69,6 +69,40 @@ $ conda env create -n fire -f environment.yml
 $ conda activate fire
 ```
 
+### Database Enviornment Variables
+
+This tool is built to use a database built using MongoDB and hosted remotely. In
+order to work correctly, a set of environment variables are needed to point to this
+database. They contain the location and access credentials for the database. Contact
+the database administrator to get the values.
+
+```bash
+[DB_NAME]
+[DB_USER]
+[DB_PASSWORD]
+[MONGODB_URI]
+```
+
+To set these variables, do the following:
+
+1) After the fire environment has been activated. Enter the following, replacing
+'my_var' and 'value' with the above variable names and the appropriate value.
+
+```bash
+$ conda env config vars set my_var=value
+```
+2) Restart the environment to let the new variables take effect.
+
+```bash
+$ conda activate fire
+```
+
+3) Check that all the variables have taken effect.
+
+```bash
+$ conda env config vars list
+```
+
 ## Launching the Web App Locally
 
 To launch the web application locally, first ensure the `fire` environment is

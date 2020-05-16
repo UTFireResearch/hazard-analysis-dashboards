@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import data_input, hazard_analysis, vent_calculator#, vent_sizing
+from apps import data_input, hazard_analysis, vent_calculator, vent_sizing
 
 
 app.layout = html.Div([
@@ -22,8 +22,8 @@ def display_page(pathname):
         return vent_calculator.layout
     elif pathname == '/input':
         return data_input.layout
-    #elif pathname == 'apps/vent_sizing':
-        #return vent_sizing.layout
+    elif pathname == '/apps/vent_sizing':
+        return vent_sizing.layout
     else:
         return html.Div([html.H3('404')])
 

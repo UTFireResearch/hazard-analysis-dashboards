@@ -37,33 +37,37 @@ def equilSoundSpeeds(gas, rtol=1.0e-6, maxiter=5000):
     
     # Equilibrium sound speed
     aequil = math.sqrt((p1 - p0)/(gas.density - r0))
+    print('executed')
     return aequil,
 
 
+#Set up unburned gas cantera objects
 gas = ct.Solution('gri30.xml','gri30_mix')
-
-# Calls Gas Properties from Gri-MECH
 carbon = ct.Solution('graphite.xml')
 mix_phases = [(gas, 1.0),(carbon, 0.0)] # Burned Mixture
+
+
+
+#Set up burned gas cantera objects
+gas_b = ct.Solution('gri30.xml','gri30_mix')
+carbon = ct.Solution('graphite.xml')
+mix_phases_b = [(gas_b, 1.0),(carbon, 0.0)]
+
+#Set equivalence ratios for burned and unburned gases
 gas.set_equivalence_ratio(phi, 'H2:0.3,CH4:0.2,CO:0.1,CO2:0.4', 'O2:1,N2:3.76')
+gas_b.set_equivalence_ratio(phi, 'H2:1', 'O2:1.0, N2:3.76')
+
 T = 300.0
 gas.TP = T, ct.one_atm
 
 #Unburned gas-air mixture speed of sound (m/s):
 au = equilSoundSpeeds(gas)[0]
 
-#Ratio of Specific Heats for Burned gas-air mixture
-gas_b = ct.Solution('gri30.xml','gri30_mix')
-
-#Calls Gas Properties from Gri-MECH
-carbon = ct.Solution('graphite.xml')
-mix_phases_b = [(gas_b, 1.0),(carbon, 0.0)]
-
 #Burned Mixture
 Pi = 101000 #Initial pressure Pa
 Ti = 300 #Initial unburned gas temperature K
 gas_b.TP = Ti,Pi
-gas_b.set_equivalence_ratio(phi, 'H2:1', 'O2:1.0, N2:3.76')
+
 
 #Mass Density of Unburned Gas-Air Mixture (kg/m^3):
 rho_u = gas_b.density

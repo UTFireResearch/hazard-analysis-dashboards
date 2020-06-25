@@ -52,9 +52,19 @@ layout = html.Div(
                     [
                         html.A(
                             html.Button("Building Deflagration",
-                                        id="building-deflagration"),
+                                        id="building-deflagration",
+                                        style={'width': '100%'}
+                            ),
+                            href="/apps/explosion_calculator",
+                            style={"float": "right", 'width': '250px'}
+                        ),
+                        html.A(
+                            html.Button("Vent Sizing",
+                                        id="vent-sizing",
+                                        style={'width': '100%'}
+                            ),
                             href="/apps/vent_calculator",
-                            style={"float": "right"}
+                            style={"float": "right","width": '250px'}
                         )
                     ],
                     className="one-third column",
@@ -186,6 +196,7 @@ layout = html.Div(
 )
 
 
+
 @app.callback(
     Output('flammability_data', 'children'),
     [Input('selected_experiment', 'children')])
@@ -220,14 +231,10 @@ def update_summary_table(flammability_data):
         su = max(df.Su)
         p_max = max(df.Pmax)
 
-        data = [{'param': 'Lower Flammability Limit',
-                 'value': '{0:.2f} %'.format(lfl)},
-                {'param': 'Upper Flammability Limit',
-                 'value': '{0:.2f} %'.format(ufl)},
-                {'param': 'Laminar Flame Speed',
-                 'value': '{0:.2f} m/s'.format(su)},
-                {'param': 'Max Adiabatic Pressure',
-                 'value': '{0:.2f} bar'.format(p_max)}]
+        data = [{'param': 'Lower Flammability Limit', 'value': '{0:.2f} %'.format(lfl)},
+                {'param': 'Upper Flammability Limit', 'value': '{0:.2f} %'.format(ufl)},
+                {'param': 'Laminar Flame Speed', 'value': '{0:.2f} m/s'.format(su)},
+                {'param': 'Max Adiabatic Pressure', 'value': '{0:.2f} bar'.format(p_max)}]
 
     return data
 

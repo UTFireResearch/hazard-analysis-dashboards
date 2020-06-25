@@ -1,5 +1,6 @@
 import numpy as np
 import cantera as ct
+import math
 
 RR = 8.314                      #Reynolds number
 Patm = 101000                   #Standard atmosphere in Pa
@@ -37,7 +38,7 @@ class Vent():
             else:
                 return items
 
-    def areaV():
+    def areaV(self, Av1):
 
         #Standard Air Composition Attribute
         air_species = self.air
@@ -55,31 +56,36 @@ class Vent():
         T1 = T  # Initial Temperature
 
         #Geometry parameters
-        L = self.Length
-        W = self.Width
-        H = self.Height
+        L = self.L
+        W = self.W
+        H = self.H
+
         #Face Areas
         Aw1 = L*H
-        Aw2 = D*H
-        Aw3 = D*L
+        Aw2 = W*H
+        Aw3 = W*L
+
         #Total Surface Area
         As = 2*Aw1 + 2*Aw2 + Aw3
         #Hydraulic Diameter
-        Dhe = 4*(Aw2/(2*D+2*H))
+        Dhe = 4*(Aw2/(2*W+2*H))
         #Area Blockage Ratio
         Br = self.Block
         #Reduced Pressure
-        P_red = self.reduced
+        P_red = self.Reduced
+        Pmax = self.Adiabatic
+        Po = 0.01325
+        Pstat = self.Static
 
         #Vent Drag Coefficient
-        Cd = self.Cd
+        Cd = self.Drag
         #Vent Static Activation Pressures
-        P_stat = self.P_stat
+        P_stat = self.Static
         #Unburned Gas-Air Mixture Sonic Flow Mass Flux(kg/m^2-s)
         Gu = 230.1
 
         #Flame speed
-        Su = self.Su
+        Su = self.S
 
         #Cantera Objects
         carbon = ct.Solution('graphite.xml')
@@ -94,11 +100,43 @@ class Vent():
         gas_b.set_equivalence_ratio(phi, fuel_species, air_species)
         gas_u.set_equivalence_ratio(phi, fuel_species, air_species)
 
-        gas_b.TP = T, Patm
-        gas_u.TP = T, Patm
+        Pi = 101000 #Initial pressure Pa
+        Ti = 300 #Initital unburned gas temperature K
+        gas_b.TP = Ti, Pi
+        gas_u.TP = 300, ct.one_atm
 
+        #----------------------
         #Unburned gas-air mixture speed of sound (m/s):
-        au = equilSoundSpeeds(gas)[0]
+        #au = self.equilSoundSpeeds(gas_u)[0]
+        # save properties
+        rtol = 1.0e-6
+        maxiter = 8000
+
+        gas_u.equilibrate('TP', rtol=rtol, maxiter=maxiter)
+
+        s0 = gas_u.s
+        p0 = gas_u.P
+        r0 = gas_u.density
+
+        # Perturb the pressure
+        p1 = p0*1.0001
+
+        # Set the gas to a state with the same entropy and composition but
+        # The perturbed pressure
+        gas_u.SP = s0, p1
+
+        # Now equilibrate the gas holding S and P constant
+        gas_u.equilibrate('SP', rtol=rtol, maxiter=maxiter)
+
+        ptest = p1-p0
+        ztest = gas_u.density - r0
+        dtest = ptest/ztest
+        debub = {'r0': r0, 'density': gas_u.density, 'bottom': ztest, 'top': ptest, 'div': dtest}
+        # Equilibrium sound speed
+        aequil = math.sqrt((p1 - p0)/(gas_u.density - r0))
+        #print('executed')
+        au = aequil
+        #--------
 
         rho_u = gas_b.density
         mu_u = gas_b.viscosity
@@ -111,7 +149,7 @@ class Vent():
 
 
         #------------VENT AREA FUNCTION FROM AUSTIN'S SCRIPT-------------------
-        Dv - math.sqrt((Av1/Vent_Number))
+        Dv = math.sqrt((Av1/self.Number))
 
         #Reynolds number of flame through structure:
         Re_flame = rho_u*Su*(0.5*Dhe)/mu_u
@@ -119,7 +157,7 @@ class Vent():
         phi_1 = max(1, (Re_flame/4000)**0.39)
 
         #Maximum Velocity through Vent (m/s):
-        uv = min(math.sqrt(Pred*2*10**5/rho_u),au)
+        uv = min(math.sqrt(P_red*2*10**5/rho_u),au)
 
         #Reynolds number through vent
         Re_vent = 0.5*rho_u*uv*Dv/mu_u
@@ -151,46 +189,21 @@ class Vent():
         elif L_D >= 2.5:
             Lambda = Lambda_1*(1+((L_D/2.5)-1)**2)
 
-        #L/D Correction Factor
-        if L_D > 5:
-            print ("L/D Above 5 see NFPA 68 Chapter 9")
-        elif Pmax > 10:
-            print ("Pmax Above 10 bar-g see NFPA 68")
+        # #L/D Correction Factor
+        # if L_D > 5:
+        #     print ("L/D Above 5 see NFPA 68 Chapter 9")
+        # elif Pmax > 10:
+        #     print ("Pmax Above 10 bar-g see NFPA 68")
 
         #Solving for vent size:
         C = (0.5*Su*rho_u*Lambda/(Gu*Cd))*(((Pmax+1)/(Po+1))**(1/gamma_b)-1)*(Po+1)**0.5
         delta = (((Pstat+1)/(Po+1))**(1/gamma_b)-1)/(((Pmax+1)/(Po+1))**(1/gamma_b)-1)
 
         #Pred Corrction Factor
-        if Pred <= 0.5:
-            Avo = As*C/math.sqrt(Pred)
-        elif Pred > 0.5:
-            Avo = (As*Su*rho_u*Lambda/(Gu*Cd))*(1-((Pred+1)/(Pmax+1))**(1/gamma_b))/(((Pred+1)/(Pmax+1))**(1/gamma_b)-delta)
+        if P_red <= 0.5:
+            Avo = As*C/math.sqrt(P_red)
+        elif P_red > 0.5:
+            Avo = (As*Su*rho_u*Lambda/(Gu*Cd))*(1-((P_red+1)/(Pmax+1))**(1/gamma_b))/(((P_red+1)/(Pmax+1))**(1/gamma_b)-delta)
         return(Avo)
-
-
     #Unburned Gas-Air Mixture Speed of Sound (m/s):
-    def equilSoundSpeeds(gas, rtol=1.0e-6, maxiter=5000):
-
-        # Set the gas to equilibrium at its current T and P
-        gas.equilibrate('TP', rtol=rtol, maxiter=maxiter)
-
-        # save properties
-        s0 = gas.s
-        p0 = gas.P
-        r0 = gas.density
-
-        # Perturb the pressure
-        p1 = p0*1.0001
-
-        # Set the gas to a state with the same entropy and composition but
-        # The perturbed pressure
-        gas.SP = s0, p1
-
-        # Now equilibrate the gas holding S and P constant
-        gas.equilibrate('SP', rtol=rtol, maxiter=maxiter)
-
-        # Equilibrium sound speed
-        aequil = math.sqrt((p1 - p0)/(gas.density - r0))
-        print('executed')
-        return aequil,
+    #def equilSoundSpeeds(gas, rtol=1.0e-6, maxiter=5000):

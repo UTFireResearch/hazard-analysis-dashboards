@@ -18,6 +18,7 @@ from .controls import plot_layout
 from .layouts import main_dropdowns
 from .util import get_main_data, _get_fuel_species, AIR_SPECIES
 from scripts.vent_model import Fuel, Geometry, Vent
+from scripts.explosion_model import Explosion, Inputs, Patm
 
 
 # Create app layout
@@ -104,7 +105,7 @@ layout = html.Div(
                             style={'margin-top': '0px'}
                         ),
                         #html.P('Disclaimer -- This calculator should only for first order approximations. It is not a substitute for a rigorous design analysis.'),
-                        html.P('This calculator uses methodology described in NFPA 68 to estimate the vent area needed to effectively control over-pressure resulting from a deflagration of battery vent gas in an enclosed space. Results are approximate and should not be used as a substitute for a rigorous design analysis. The calculator takes eleven parameters as input and returns the required vent area. Definitions for each parameter is included below.',
+                        html.P('This calculator uses methodology described in NFPA 68 to estimate the vent area needed to effectively control over-pressure resulting from a deflagration of battery vent gas in an enclosed space. Results are approximate and should not be used as a substitute for a rigorous design analysis. The calculator takes eleven parameters as input and returns an estimate of the required vent area. Definitions for selected parameters are included below.',
                         style={}
                         ),
                         html.Hr(style={'margin-top': '0px', 'margin-bottom': '20px'}),
@@ -112,6 +113,11 @@ layout = html.Div(
                         html.P([html.Strong('Blockage Ratio: '), html.Em('In an average cross-section of the room (height x width), what fraction of the area is blocked by equipment or other obstructions?')]),
                         html.P([html.Strong('Static Activation Pressure: '), html.Em('Pressure at which the vent fails when the load is applied slowly in a quasi-static manner. (Provided by vent manufacturer.)')]),
                         html.P([html.Strong('Vent Discharge Coefficient: '), html.Em("Adjustment factor for flow losses through the vent on activation. (If you don't have a specific value, assume 0.7)")]),
+                        html.P([html.Strong('Equivalence Ratio: '), html.Em("Ratio of the actual fuel-air ratio to the stoichiometric fuel-air ratio. (\u03A6 \u2248 1.1 will provide the highest deflagration pressures)")]),
+                        html.Hr(style={'margin-top': '0px', 'margin-bottom': '20px'}),
+                        html.P([html.Strong('1: '), html.Em("Select an experiment from the dropdown menu to populate the vent gas composition. (Pre-computed flammability parameters and vent sizing are currently only available for experiments at 100% State-Of-Charge)")]),
+                        html.P([html.Strong('2: '), html.Em("Wait for the fuel species chart and flammability parameters table to populate. (If the composition chart fails to populate, please refresh the page)")]),
+                        html.P([html.Strong('3: '), html.Em("Enter the remaining parameters and wait for the results field to populate.")]),
                     ],
                     className='pretty_container twelve columns',
                     style={'text-aling': 'center'}
@@ -141,6 +147,7 @@ layout = html.Div(
                 html.Div(id='gas_composition', style={'display': 'none'}),
                 html.Div(id='flammability_data', style={'display': 'none'}),
                 html.Div(id='fuel_param', style={'display': 'none'}),
+                html.Div(id='master-input-parameters', style={'display': 'none'}),
                 html.Div(
                     [
                         dcc.Graph(id='composition_plot')
@@ -310,6 +317,14 @@ layout = html.Div(
                             style={'margin-top': '0px'}
                             ),
                             dcc.Input(
+                                id='reduced_pressure',
+                                type='number',
+                                min=0,
+                                placeholder='Reduced Pressure bar-g',
+                                className='control_label',
+                                style={'margin-bottom': '5px'}
+                            ),
+                            dcc.Input(
                                 id='static_pressure',
                                 type='number',
                                 min=0,
@@ -407,177 +422,109 @@ layout = html.Div(
             ],
             className='row flex-display'
         ),
-        html.Hr(),
-        html.H6(
-            'Debugging Section',
-            id = 'debug_label',
-        ),
-        html.Div(
-        [
-            html.Div(
-                [
-                    html.Div(id='room_geometry'),
-                    html.Hr(),
-                    html.Div(id='vent_pp'),
-                    html.Hr(),
-                    html.Div(id='comp_test'),
-                    html.Hr(),
-                    html.Div(id='fuel_test'),
-                    html.Hr(),
-                    html.Div(id='test_return'),
-                    html.Hr(),
-                    html.Div(id='dummy_dump'),
-
-                ],
-                className='pretty_container twelve columns'
-            )
-        ],
-        className='row flex-display'
-        )
+        # html.Hr(),
+        # html.H6(
+        #     'Debugging Section',
+        #     id = 'debug_label',
+        # ),
+        # html.Div(
+        # [
+        #     html.Div(
+        #         [
+        #             html.Div(id='master-output-parameters'),
+        #             html.Hr(),
+        #             html.Div(id='test-return'),
+        #             html.Hr(),
+        #             html.Div(id='comp_test'),
+        #             html.Hr(),
+        #             html.Div(id='dummy_dump'),
+        #
+        #         ],
+        #         className='pretty_container twelve columns'
+        #     )
+        # ],
+        # className='row flex-display'
+        # )
 
         #-----------------------END INPUT SECTION----------------------------
     ]
 )
-#----------------------END OVERALL LAYOUT CONTAINER----------------------------
+#----------------------END OVERALL LAYOUT CONTAINER
 
-#-------INTAKE GEOMETRY PARAMETERS AND PACKAGE AS OBJECT-----------------------
+#-------------MASTER INPUT PARAMETER CALLBACK ---------------------------------
 @app.callback(
     [
-    Output('total_surface_area', 'children'),
-    Output('room_geometry', 'children')
+        Output('master-input-parameters', 'children'),
+        Output('master-output-parameters', 'children'),
     ],
     [
-        Input('room_height','value'),
+        Input('reduced_pressure', 'value'),
+        Input('room_height', 'value'),
         Input('room_width', 'value'),
-        Input('room_length','value'),
-    ]
-)
-def surface_calc(height, width, length):
-
-    if height and width and length:
-
-        As = (1)*(width*length) + (2)*(height*width) + (2)*(height*length)
-
-        room_geo = {
-            'rHeight': height,
-            'rWidth': width,
-            'rLength': length,
-        }
-
-        room_geo = json.dumps(room_geo)
-
-        return '{} m\u00b2'.format(As), room_geo
-    else:
-        return 'N/A', 'empty'
-
-#-------INTAKE FUEL AND COMBUSTION PARAMETERS AND PACKAGE AS OBJECT------------
-@app.callback(
-    [
-        Output('fuel_param', 'children'),
-        Output('fuel_test', 'children'),
-    ],
-    [
-        Input('equivalence_ratio','value'),
+        Input('room_length', 'value'),
+        Input('equivalence_ratio', 'value'),
         Input('blockage_ratio', 'value'),
         Input('amb_pressure', 'value'),
-        Input('amb_temp','value'),
-    ]
-)
-def fuel_pack(equiv, block, apres, atemp):
-
-    if equiv and block and apres and atemp:
-
-        vent_gas = {
-            'phi': equiv,
-            'block': block,
-            'ambient_P': apres,
-            'ambient_T': atemp,
-        }
-
-        vent_gas = json.dumps(vent_gas)
-
-        return vent_gas, vent_gas
-
-#-------INTAKE VENT PARAMETERS AND PACKAGE AS OBJECT---------------------------
-@app.callback(
-    [
-    Output('vent_param', 'children'),
-    Output('vent_pp', 'children')
-    ],
-    [
+        Input('amb_temp', 'value'),
         Input('static_pressure', 'value'),
-        Input('vent_discharge', 'value')
+        Input('vent_discharge', 'value'),
+        Input('vent_number', 'value'),
     ]
 )
-def vent_pack(static_ap, discharge):
+def master_parameter_input(rP, rH, rW, rL, eR, bR, aP, aT, sP, vD, vN):
 
-    if static_ap and discharge:
+     '''
+     Takes all of the input fields and packages them into a single data object
+     that can be unpacked in a subsequent callback.
+     '''
 
-        vent = {
-            'static': static_ap,
-            'discharge': discharge
-        }
+     if rP and rH and rW and rL and eR and bR and aP and aT and sP and vD and vN:
 
-        vent = json.dumps(vent)
+         input_array = {
+            'Height': rH,
+            'Width': rW,
+            'Length': rL,
+            'Phi': eR,
+            'Block': bR,
+            'AmbientP': aP,
+            'AmbientT': aT,
+            'Static': sP,
+            'Discharge': vD,
+            'Number': vN,
+            'rPressure': rP
+             }
 
-        return vent, vent
-    else:
-        return 'empty', 'empty'
+         jArray = json.dumps(input_array)
+
+         return jArray, jArray
 
 #-----------PERFORM THE ACTUAL COMPUTATION-------------------------------------
 
 @app.callback(
     [
         Output('required_surface_area', 'children'),
-        Output('test_return', 'children')
+        Output('total_surface_area', 'children')
     ],
     [
-        Input('room_geometry', 'children'),
+        Input('master-input-parameters', 'children'),
         Input('gas_composition', 'children'),
-        Input('fuel_param', 'children'),
         Input('flammability_data', 'children'),
-        Input('vent_number', 'value')
     ]
 
 )
-def sizing_calc(geom, gases, flame_p, flame_d, num):
+def sizing_calc(iParameters, gases, fData):
 
     #unpack all of the JSON data objects
-    flame_pp = json.loads(flame_p) if flame_p else {}
-    geom = json.loads(geom) if geom else {}
-    gases = json.loads(gases) if gases else {}
-    flammability_data = json.loads(flame_d) if flame_d else {}
+    iParameters = json.loads(iParameters) if iParameters else {} #user parameters
+    gases = json.loads(gases) if gases else {} #database gas composition
+    fData = json.loads(fData) if fData else {} #database flammability data
 
-    if flame_pp:
-        test1 = True
-    else:
-        test1 = False
-    if geom:
-        test2 = True
-    else:
-        test2 = False
-    if gases:
-        test3 = True
-    else:
-        test3 = False
-    if flammability_data:
-        test4 = True
-    else:
-        test4 = False
-    if num:
-        test5 = True
-    else:
-        test5 = False
+    if iParameters and gases and fData:
 
-    test_array = {'flame_p': flame_pp, 'geom': test2, 'gases': test3, 'flammability_data': test4, 'num': num}
-    test_array = json.dumps(test_array)
-
-    if geom and gases and flame_p and flame_d:
-
-        #find flame parameters
-        if flammability_data is not None:
-            flammability_data.pop('_id')
-            df = pd.DataFrame.from_dict(flammability_data,
+        #find UFL - LFL - Su - Pmax from flammabilty data
+        if fData is not None:
+            fData.pop('_id')
+            df = pd.DataFrame.from_dict(fData,
                                         orient='index').transpose()
 
             ufl = max(df[(df.Xi == 0) & (df.Flammable == 1)].Xf) * 100
@@ -587,51 +534,65 @@ def sizing_calc(geom, gases, flame_p, flame_d, num):
 
         fuel_species = _get_fuel_species(gases) #makes non-cantera species propane
 
+        Aw1 = iParameters['Length']*iParameters['Height']
+        Aw2 = iParameters['Width']*iParameters['Height']
+        Aw3 = iParameters['Width']*iParameters['Length']
+
+        iVentPercent = 0.4
+
         #create gas properties object
-        gas = Input(
+        gas_comp = Fuel(
             air = AIR_SPECIES,
             fuel = fuel_species,
-            phi = flame_p['phi'],
+            phi = iParameters['Phi'],
             f = 1.0,
-            P = flame_P['ambient_P'],
-            T = flame_P['ambient_T'],
+            P = iParameters['AmbientP'],
+            T = iParameters['AmbientT'],
             S = su,
+            Block = iParameters['Block'],
+            Reduced = iParameters['rPressure'],
+            Drag = iParameters['Discharge'],
+            Static = iParameters['Static'],
+            Number = iParameters['Number'],
+            Adiabatic = p_max
         )
 
-        room = Inputs(
-            L = geom['rLength'],
-            W = geom['rWidth'],
-            H = geom['rHeight'],
+        userInput = Fuel(
+            L = iParameters['Length'],
+            W = iParameters['Width'],
+            H = iParameters['Height'],
         )
 
-        cntrl = Inputs(
+        cntrl = Fuel(
             tmax = 0.35
         )
 
-        Aw1 = geom['rLength']*geom['rHeight']
-        Aw2 = geom['rWidth']*geom['rHeight']
-        Aw3 = geom['rWidth']*geom['rLength']
+        explode = Vent(gas=gas_comp, room=userInput, cntrl = cntrl)
 
-        explode = Explosion(gas=gas, room=room, cntrl = cntrl)
-
-        ventPercent = 0.5
-        ventNum = num
+        ventPercent = 0.3
+        ventNum = iParameters['Number']
         Av1 = ventPercent*Aw1
+        Avg = 0.001
+        Avo = 0
+
+        Asurface = 2*Aw1 + 2*Aw2 + Aw3
 
         while 100*abs(Avo-Avg)/(0.5*(Avo+Avg)) > 1:
 
-            Avo = ventarea(Av1)
+            Avo = explode.areaV(Av1)
             Avg = Av1
             Av1 = Avo
+        #dddd = explode.areaV(Av1)
 
-        dedud = {'VentArea': Avo}
-        dedud = json.dumps(dedud)
+        #dedud = {'VentArea': Avo}
+        #dedud = json.dumps(dedud)
+        #dddd = json.dumps(dddd)
 
-        return '{} m\u00b2'.format(Avo), dedud
+        #return dddd, fuel_species
+        return '{:.2f} m\u00b2'.format(Avo), '{:.2f} m\u00b2'.format(Asurface)
 
     else:
-        test_value = 99
-        return '{} m\u00b2'.format(test_value), test_array#'{} m\u00b2'.format(test_value)
+        return 'Error', 'Error'
 
 #----------FUEL COMPOSITION DEBUGGING -----------------------------------------
 @app.callback(

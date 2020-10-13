@@ -8,8 +8,9 @@ from pymongo import MongoClient
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
 DB_USER = os.environ.get('DB_USER')
 DB_NAME = os.environ.get('DB_NAME')
-DB_URI = (f'mongodb://{DB_USER}:{DB_PASSWORD}@ds045897.mlab.com:45897'
-          f'/{DB_NAME}?retryWrites=false')
+DB_URI = (f'mongodb+srv://{DB_USER}:{DB_PASSWORD}@cluster-27rhpgwj.lojyr.mongodb.net/heroku_27rhpgwj?retryWrites=true&w=majority')
+#DB_URI = (f'mongodb://{DB_USER}:{DB_PASSWORD}@ds045897.mlab.com:45897'
+          #f'/{DB_NAME}?retryWrites=false')
 
 
 def insert_data(collection, dct):

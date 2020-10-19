@@ -52,6 +52,21 @@
   .columns:last-child {
     margin-left: 0; } */
 
+  .mini_container {
+      margin: 10px;
+    /*  margin-bottom: 25px !important;*/
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      padding: 15px;
+      position: relative;
+      box-shadow: 2px 2px 2px lightgrey;
+  }
+
+  #right-column {
+  display: flex;
+  flex-direction: column;
+  }
+
   .one.column,
   .one.columns                    { width: 8%;             }
   .two.columns                    { width: 16.25%;         }
@@ -160,6 +175,15 @@ body {
   padding-left: 0px;
 }
 
+.container-display {
+    display: flex;
+  }
+  #wells,
+  #gas,
+  #oil {
+    margin-right: 10px;
+  }
+
 .row {
   display: flex;
 }
@@ -175,7 +199,6 @@ body {
   height: calc(100% - 30px);
   width: calc(100% - 30px);
 }
-
 
 #countGraphContainer {
   flex: 5;
@@ -201,13 +224,13 @@ body {
   flex-direction: column;
 }
 
-#wells {
+#incident_number {
   flex: 1;
 }
 
-#gas {
-  margin-right: 0;
-  padding-right: 0;
+#fire_number {
+  /* margin-right: 0;
+  padding-right: 0; */
   flex: 1;
 }
 
@@ -215,17 +238,17 @@ body {
   align-items: center;
 }
 
-#oil {
-  margin-right: 0;
+#killd_number {
+  /* margin-right: 0;
   padding-right: 0;
   margin-left: 0;
-  padding-left: 0;
+  padding-left: 0; */
   flex:1;
 }
 
-#water {
-  margin-left: 0;
-  padding-left: 0;
+#hurt_number {
+  /* margin-left: 0;
+  padding-left: 0; */
   flex: 1;
 }
 
@@ -238,6 +261,16 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+#third_row {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/* #map_graph {
+  position: absolute;
+
+} */
 
 /* Typography
 –––––––––––––––––––––––––––––––––––––––––––––––––– */

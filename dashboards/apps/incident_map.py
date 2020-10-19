@@ -1,0 +1,517 @@
+import dash_core_components as dcc
+import dash_html_components as html
+import dash_table
+from dash.dependencies import Input, Output
+
+import math
+import copy
+import json
+import datetime as dt
+
+
+from app import app
+from .callbacks import * #noqa
+from .controls import plot_layout, APPLICATIONS, INCIDENTS
+from .util import get_incident_data_lean
+
+mapbox_access_token = 'pk.eyJ1Ijoic21hdHRoZXdzOTUiLCJhIjoiY2tnOXZ6bHI2MDE3YTJybXVnZTlmZHQ2aiJ9.4-K3Y_0bc4Z-KJVwNn-TkA'
+
+main_map_layout = dict(
+    autosize=True,
+    automargin=True,
+    margin=dict(l=30, r=30, b=20, t=40),
+    hovermode="closest",
+    plot_bgcolor="#F9F9F9",
+    paper_bgcolor="#F9F9F9",
+    legend=dict(font=dict(size=10), orientation="h"),
+    title="Incident Map",
+    mapbox=dict(
+        accesstoken=mapbox_access_token,
+        style="light",
+        #center=dict(lon=0, lat=0),
+        #zoom=1.5,
+    ),
+)
+
+application_options = [
+    {"label": str(APPLICATIONS[application]), "value": str(application)}
+    for application in APPLICATIONS
+]
+
+incident_options = [
+    {"label": str(INCIDENTS[type]), "value": str(type)}
+    for type in INCIDENTS
+]
+
+YEAR_RANGE = [2000,2021]
+
+#------------------------CONTAINER FOR WHOLE LAYOUT
+layout = html.Div(
+    [
+        #---------------------TOP MAIN HEADER----------------------------------
+        html.Div(
+            [   #------------------------UT LOGO--------------------------------
+                html.Div(
+                    [
+                        html.Img(
+                            src=("/assets/shield.png"),
+                            style={
+                                "height": "60px",
+                                "width": "auto",
+                            }
+                        )
+                    ],
+                    id="logo",
+                    className="one-third column",
+                    style={"textAlign": "left"}
+                ),
+                #---------------------TITLE AND SUBTITLE------------------------
+                html.Div(
+                    [
+                        html.H3(
+                            "Battery Fire and Explosion Incidents",
+                            style={"margin-bottom": "0px"}
+                        ),
+                        html.H5(
+                            "Database Tools",
+                        )
+                    ],
+                    id="title",
+                    className="one-half column",
+                    style={"margin-bottom":"30px"}
+                    ),
+                #--------------------PAGE LINK BUTTONS--------------------------
+                html.Div(
+                    [
+                        html.A(                 #Hazard Analysis Buttton
+                            html.Button("Hazard Analysis",
+                                        id="hazard-analysis",
+                                        style={'width': '100%'}
+                            ),
+                            href="/apps/hazard_analysis",
+                            style={"float": "right", 'width': '250px'}
+                        ),
+                        html.A(                 #Building Deflagration Button
+                            html.Button("Building Deflagration",
+                                        id="building-deflagration",
+                                        style={'width': '100%'}
+                            ),
+                            href="/apps/explosion_calculator",
+                            style={"float":"right", 'width': '250px'}
+                        )
+                    ]
+                )
+            ],
+                #---------------------HEADER STYLE------------------------------
+                id="header",
+                className="row flex-display",
+                style={"margin-bottom": "25px"}
+        ),
+        #--------------------------FIRST CONTENT ROW----------------------------
+        html.Div(
+            [   #--------------------DATA HOLDER--------------------------------
+                html.Div(
+                    id='incident_data',
+                    children=get_incident_data_lean(),
+                    style={'display':'none'}
+                    ),
+                #------------FILTER OPTIONS PRETTY CONTAINER---------------------
+                html.Div(
+                    [
+                        html.P('Filter by incident date (or select range in histogram):'),
+                        dcc.RangeSlider(
+                            id="year_slider",
+                            min= YEAR_RANGE[0],
+                            max= YEAR_RANGE[1],
+                            value=YEAR_RANGE,
+                            className="dcc_control"
+                        ),
+                        html.Hr(style={'margin-bottom': '10px', 'margin-top': '10px'}),
+                        html.P('Filter by battery application:'),
+                        dcc.RadioItems(
+                            id='application_type_selector',
+                            options=[
+                                {'label': 'All Applications', 'value': 'all'},
+                                {'label': 'Customize', 'value': 'custom'}
+                            ],
+                            value='all',
+                            labelStyle={'display': 'inline-block'},
+                            className='dcc_control',
+                        ),
+                        dcc.Dropdown(
+                            id='application_types',
+                            options=application_options,
+                            multi=True,
+                            value=list(APPLICATIONS.keys()),
+                            className='dcc_control',
+                        ),
+                        html.Hr(style={'margin-bottom': '10px', 'margin-top': '10px'}),
+                        html.P('Filter by incident type:'),
+                        dcc.Dropdown(
+                            id='incident_types',
+                            options=incident_options,
+                            multi=True,
+                            value=list(INCIDENTS.keys()),
+                            className='dcc_control'
+                        ),
+
+                    ],
+                    id='cross-filter-options',
+                    className='pretty_container four columns',
+                ),
+                #-------------FIRST CONTENT ROW (SECOND COLUMN)----------------
+                html.Div(
+                    [
+                        #----------------MINI-CONTAINER ROW--------------------
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H6(id='iNumber', children='1000'),
+                                        html.P('No. of Incidents'),
+                                    ],
+                                    id='incident_number',
+                                    className='mini_container',
+                                ),
+                                # html.Div(
+                                #     [
+                                #         html.H6(id='fNumber', children='1000'),
+                                #         html.P('No. of Fires'),
+                                #     ],
+                                #     id='fire_number',
+                                #     className='mini_container',
+                                # ),
+                                html.Div(
+                                    [
+                                        html.H6(id='kNumber', children='1000'),
+                                        html.P('No. of Deaths'),
+                                    ],
+                                    id='killd_number',
+                                    className='mini_container',
+                                ),
+                                html.Div(
+                                    [
+                                        html.H6(id='hNumber', children='1000'),
+                                        html.P('No. of Injuries'),
+                                    ],
+                                    id='hurt_number',
+                                    className='mini_container',
+                                )
+                            ],
+                            id='info-container',
+                            className='row container-display',
+                            style={'display': 'flex','position': 'relative'},
+                        ),
+                        html.Div(
+                            [
+                                dcc.Graph(id="count_graph", style={'autosize':'true'})
+                            ],
+                            id='countGraphContainer',
+                            className='pretty_container',
+                        ),
+                    ],
+                    id='right-column',
+                    className='eight columns'
+
+                ),
+            ],
+            id="second_row",
+            className="row flex-display",
+            style={"margin-bottom": "25px"}
+        ),
+        #-------------------SECOND CONTENT ROW---------------------------------
+        html.Div(
+            [
+                html.Div(
+                    [dcc.Graph(id="map_graph")],
+                    className="pretty_container eight columns",
+                ),
+                html.Div(
+                    [
+                        html.H6(
+                            id='incident_info_header',
+                            children='Incident Information',
+                            style={'textAlign': 'center'}
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'}
+                        ),
+                        html.P(
+                            id='info_date',
+                            children='Date:',
+
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'}
+                        ),
+                        html.P(
+                            id='info_place',
+                            children='Location:',
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'}
+                        ),
+                        html.P(
+                            id='info_application',
+                            children='Application:',
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'},
+                        ),
+                        html.P(
+                            id='info_description',
+                            children='Description:',
+                        ),
+                    ],
+                    className="pretty_container four columns",
+                )
+            ],
+            id="third_row",
+            className="row flex-display"
+        ),
+    ]
+)
+
+def filter_incidents(df,year_slider,applications, incidents):
+
+    dff = df[
+        df['appID'].isin(applications)
+        & df['Incident'].isin(incidents)
+        & (df["Date"] > dt.datetime(year_slider[0],1,1))
+        & (df["Date"] < dt.datetime(year_slider[1],1,1))
+    ]
+    return dff
+
+# def unpack_data(data):
+#     flat_data = json.loads(data)
+#     flat_data = pd.json_normalize(flat_data)
+#     idf = pd.DataFrame(flat_data)
+#     idf = idf.rename(columns=
+#         {"incident":"Incident",
+#          "date.stamp": "Date",
+#          "place.location.type": "Type",
+#          "place.location.coordinates": "Coordinates",
+#          "place.placeName": 'Place',
+#          "application.appID": 'appID',
+#          "casualties.killed": 'Killed',
+#          "casualties.injured": 'Injured',
+#         }
+#     )
+#     idf['Date'] = pd.to_datetime(idf['Date'])
+#
+#     return idf
+
+# Slider -> count graph
+@app.callback(Output("year_slider", "value"), [Input("count_graph", "selectedData")])
+def update_year_slider(count_graph_selected):
+
+    if count_graph_selected is None:
+        return [YEAR_RANGE[0], YEAR_RANGE[1]]
+
+    nums = [int(point["pointNumber"]) for point in count_graph_selected["points"]]
+    return [min(nums) + 2000, max(nums) + 2001]
+
+#APPLICATION RADIO ---> DROPDOWN UPDATE
+@app.callback(
+    Output('application_types', 'value'),
+    [
+        Input('application_type_selector', 'value')
+    ]
+)
+def application_status(status):
+    if status == 'all':
+        return list(APPLICATIONS.keys())
+    elif status == 'custom':
+        return []
+
+# Selectors -> well text
+@app.callback(
+    [
+        Output("iNumber", "children"),
+        Output("kNumber", "children"),
+        Output("hNumber", "children"),
+    ],
+    [
+        Input('incident_data', 'children'),
+        Input("application_types", "value"),
+        Input("incident_types", "value"),
+        Input("year_slider", "value"),
+    ],
+)
+def update_well_text(data, application_types, incident_types, year_slider):
+
+    flat_data = json.loads(data)
+    flat_data = pd.json_normalize(flat_data)
+    idf = pd.DataFrame(flat_data)
+    idf = idf.rename(columns=
+        {"incident":"Incident",
+         "date.stamp": "Date",
+         "place.location.type": "Type",
+         "place.location.coordinates": "Coordinates",
+         "place.placeName": 'Place',
+         "application.appID": 'appID',
+         "casualties.killed": 'Killed',
+         "casualties.injured": 'Injured',
+        }
+    )
+    idf['Date'] = pd.to_datetime(idf['Date'])
+
+    dff = filter_incidents(idf, year_slider, application_types, incident_types)
+
+    #GETTING TOTALS FOR KILLED
+    kSum = dff['Killed'].sum()
+    #GETTTING TOTALS FOR INJURIES
+    hSum =dff['Injured'].sum()
+
+    return [dff.shape[0], kSum, hSum]
+
+#-------------------MAKE MAP OBJECT--------------------------------------------
+@app.callback(
+    Output('map_graph', 'figure'),
+    [
+        Input('incident_data', 'children'),
+        Input('application_types', 'value'),
+        Input('incident_types', 'value'),
+        Input('year_slider', 'value'),
+    ],
+    [
+        State('map_graph', 'relayoutData')
+    ],
+)
+def make_map_graph(data, applications, incidents, years, main_graph_layout):
+
+    flat_data = json.loads(data)
+    flat_data = pd.json_normalize(flat_data)
+    idf = pd.DataFrame(flat_data)
+    idf = idf.rename(columns=
+        {"incident":"Incident",
+         "date.stamp": "Date",
+         "place.location.type": "Type",
+         "place.location.coordinates": "Coordinates",
+         "place.placeName": 'Place',
+         "application.appID": 'appID',
+         "casualties.killed": 'Killed',
+         "casualties.injured": 'Injured',
+        }
+    )
+    idf['Date'] = pd.to_datetime(idf['Date'])
+
+    #FILTER INCIDENT DATAFRAME BASED ON USER FILTER CRITERIA
+    fidf = filter_incidents(idf, YEAR_RANGE, applications, incidents)
+    #DROP ANY INCIDENT FOR WHICH THERE ARE NO COORDINATES (SUCH AS ON PLANES)
+    fidf = fidf.dropna()
+
+    #SPLIT COORDINATES COLUMN OF THE DATAFRAME INTO TWO COLUMNS FOR LATITUDE AND LONGITUDE
+    fidf[['Latitude','Longitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
+
+    traces = []
+    for incident_class, event in fidf.groupby('Incident'):
+        trace = dict(
+            type="scattermapbox",
+            lon=event["Longitude"],
+            lat=event["Latitude"],
+            text=event["Date"],
+            customdata=event["Date"],
+            name=INCIDENTS[incident_class],
+            marker=dict(size=8, opacity=0.6),
+            )
+        traces.append(trace)
+
+    if main_graph_layout is not None:
+        if "mapbox.center" in main_graph_layout.keys():
+            lon = float(main_graph_layout["mapbox.center"]["lon"])
+            lat = float(main_graph_layout["mapbox.center"]["lat"])
+            zoom = float(main_graph_layout["mapbox.zoom"])
+            layout["mapbox"]["center"]["lon"] = lon
+            layout["mapbox"]["center"]["lat"] = lat
+            layout["mapbox"]["zoom"] = zoom
+
+    figure = dict(data=traces, layout=main_map_layout)
+    return figure
+#--------------------MAKE INCIDENT HISTOGRAM-----------------------------------
+@app.callback(
+    Output("count_graph","figure"),
+    [
+        Input('incident_data', 'children'),
+        Input('year_slider', 'value'),
+        Input('application_types', 'value'),
+        Input('incident_types', 'value'),
+    ]
+)
+def make_count_graph(data,year_slider,applications, incidents):
+
+    #lDict_count = copy.deepcopy(lDict)
+    lDict_count = dict(
+        autosize=True,
+        automargin=True,
+        margin=dict(l=30, r=30, b=20, t=40),
+        hovermode="closest",
+        plot_bgcolor="#F9F9F9",
+        paper_bgcolor="#F9F9F9",
+        legend=dict(font=dict(size=10), orientation="h"),
+        title="Incident Map",
+        mapbox=dict(
+            #accesstoken=mapbox_access_token,
+            style="light",
+            center=dict(lon=-78.05, lat=42.54),
+            zoom=7,
+        ),
+    )
+
+    flat_data = json.loads(data)
+    flat_data = pd.json_normalize(flat_data)
+    idf = pd.DataFrame(flat_data)
+    idf = idf.rename(columns=
+        {"incident":"Incident",
+         "date.stamp": "Date",
+         "place.location.type": "Type",
+         "place.location.coordinates": "Coordinates",
+         "place.placeName": 'Place',
+         "application.appID": 'appID',
+        }
+    )
+    idf['Date'] = pd.to_datetime(idf['Date'])
+
+    #FILTER DATAFRAME BASED ON INPUTS
+    fidf = filter_incidents(idf, YEAR_RANGE, applications, incidents)
+
+    #CREATE GRAPH SPECIFIC DATAFRAME
+    Grdf = fidf[['_id','Date',]]
+    Grdf.index = Grdf['Date']
+    Grdf = Grdf.resample('Y').count()
+
+    #fidf = filter_incidents(idf,[1990,2020])
+
+    colors = []
+    for i in range(YEAR_RANGE[0],YEAR_RANGE[1]):
+        if i >= int(year_slider[0]) and i < int(year_slider[1]):
+            colors.append("rgb(123, 199, 255)")
+        else:
+            colors.append("rgba(123, 199, 255, 0.2)")
+
+    gData = [
+        dict(
+            type="scatter",
+            mode="markers",
+            x=Grdf.index,
+            y=Grdf["_id"] / 2,
+            name="All Incidents",
+            opacity=0,
+            hoverinfo="skip",
+        ),
+        dict(
+            type="bar",
+            x=Grdf.index,
+            y=Grdf["_id"],
+            name="All Incidents",
+            marker=dict(color=colors),
+        ),
+    ]
+
+    lDict_count["title"] = "Battery Incidents per Year"
+    lDict_count["dragmode"] = "select"
+    lDict_count["showlegend"] = False
+    lDict_count["autosize"] = True
+
+    figure = dict(data=gData, layout=lDict_count)
+    return figure

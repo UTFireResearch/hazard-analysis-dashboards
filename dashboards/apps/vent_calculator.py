@@ -62,7 +62,7 @@ layout = html.Div(
                     [
                         html.A(                 #Hazard Analysis Buttton
                             html.Button("Hazard Analysis",
-                                        id="hazard-analysi",
+                                        id="hazard-analysis",
                                         style={'width': '100%'}
                             ),
                             href="/apps/hazard_analysis",

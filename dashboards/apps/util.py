@@ -100,7 +100,7 @@ def get_flammability_data(experiment):
 
 def get_incident_data_lean():
     """Get data in incident collection in JSON serialized form."""
-    cols = {'_id':1, 'date.stamp':1, 'place.placeName':1, 'place.location':1, 'incident':1, 'application.appID':1}
+    cols = {'_id':1, 'date.stamp':1, 'place.placeName':1, 'place.location':1, 'incident':1, 'application.appID':1, 'casualties':1}
     results = find(collection=INCIDENT_COLLECTION, search={}, projection=cols)
     data = json.dumps(list(results),default=str)
     return data

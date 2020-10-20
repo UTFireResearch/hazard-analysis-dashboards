@@ -75,7 +75,7 @@ layout = html.Div(
             id="header",
             className='row flex-display',
             style={
-                "magin-bottom": "30px"
+                "margin-bottom": "25px"
             }
         ), #-----------------------END HEADER DIV------------------------------
 
@@ -84,7 +84,14 @@ layout = html.Div(
             [
                 html.Div(
                     [
-
+                        html.Div(
+                            [
+                                html.P(
+                                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Viverra nibh cras pulvinar mattis nunc sed. Adipiscing at in tellus integer feugiat scelerisque varius morbi. Viverra tellus in hac habitasse platea. Ut sem nulla pharetra diam sit amet. Nunc sed blandit libero volutpat sed cras ornare arcu. Diam phasellus vestibulum lorem sed risus ultricies tristique. Aliquam sem et tortor consequat id porta nibh venenatis cras.'
+                                )
+                            ],
+                            style={'margin-right': '25px', 'margin-left': '25px'}
+                        ),
                     ],
                     className="pretty_container eight columns"
                 ),
@@ -102,22 +109,33 @@ layout = html.Div(
         html.Div(
             [   #-----------------SECOND ROW PRETTY CONTAINER------------------
                 html.Div(
-                    [   #--------------SECOND ROW CONTENT COLUMN---------------
+                    [   #--------------SECOND ROW CONTENT COLUMN----------------
                         html.Div(
-                            [
+                            [   #------------CONTENT TITLE----------------------
                                 html.Div(
                                     [
                                         html.H6(children='Vent Gas Flammability Data')
                                     ],
-                                    className="row"
+                                    className="row flex-display"
                                 ),
+                                #-------------CONTENT PARAGRAPH-----------------
                                 html.Div(
                                     [
                                         html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
-                                    ]
+                                    ],
+                                    className='row flex-display',
+                                ),
+                                #-------------LINK BUTTON-----------------------
+                                html.A(
+                                    html.Button("Go To Tool",
+                                                id="building-deflagration",
+                                                style={'width':'100%','margin-top': '20px'}
+                                    ),
+                                    href='/apps/hazard_analysis',
                                 ),
                             ],
                             className='two-thirds column',
+                            style={'margin-left': '25px'}
                         ),
                         #--------------SECOND ROW IMAGE COLUMN-----------------
                         html.Div(
@@ -144,27 +162,44 @@ layout = html.Div(
                 html.Div(
                     [   #-----------------THIRD ROW CONTENT COLUMN--------------
                         html.Div(
-                            [
+                            [   #---------CONTENT TITLE------------------------
                                 html.Div(
                                     [
                                         html.H6(children='Fire and Explosion Incidents')
                                     ],
-                                    className="row"
+                                    className="row flex-display"
                                 ),
+                                #---------DESCRIPTION CONTENT-------------------
                                 html.Div(
                                     [
                                         html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
                                     ]
                                 ),
+                                #----------LINK BUTTON--------------------------
+                                html.A(
+                                    html.Button("Comign Soon",
+                                                id="building-deflagration",
+                                                style={'width':'100%', 'margin-top':'20px'}
+                                    ),
+                                    href='/apps/hazard_analysis',
+                                ),
                             ],
-                            className='two-thirds column'
+                            className='two-thirds column',
+                            style={'margin-left': '25px'}
                         ),
                         #-----------------THIRD ROW IMAGE COLUMN---------------
                         html.Div(
                             [
-                                #content to be added
-                            ]
-                        )
+                                html.Img(
+                                    src=('/assets/incident-map.png'),
+                                    style={
+                                        'height': '200px',
+                                    }
+                                ),
+                            ],
+                            className='one-third column',
+                            style={'textAlign': 'center'}
+                        ),
                     ],
                     className="pretty_container twelve columns",
                 ),
@@ -177,20 +212,31 @@ layout = html.Div(
                 html.Div(
                     [   #---------------FOURTH ROW CONTENT COLUMN---------------
                         html.Div(
-                            [
+                            [   #--------------CONTENT TITLE--------------------
                                 html.Div(
                                     [
                                         html.H6(children='Deflagration Vent Calculator')
                                     ],
-                                    className="row"
+                                    className="row flex-display"
                                 ),
+                                #---------------CONTENT PARAGRAPH---------------
                                 html.Div(
                                     [
                                         html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
                                     ]
                                 ),
+                                #--------------TOOL LINK BUTTON-----------------
+                                html.A(
+                                    [
+                                        html.Button("Go To Tool",
+                                                    id="building-deflagration",
+                                                    style={'width':'100%', 'margin-top':'20px'}
+                                        ),
+                                    ],
+                                ),
                             ],
                             className='two-thirds column',
+                            style={'margin-left': '25px'}
                         ),
                     ],
                     className="pretty_container twelve columns",

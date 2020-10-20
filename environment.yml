@@ -17,6 +17,7 @@ dependencies:
   - pymongo[srv]=3.9.0
   - scikit-image=0.15.0
   - scipy=1.1*
+  - dnspython
   - pip:
     - gunicorn==19.9.0
 

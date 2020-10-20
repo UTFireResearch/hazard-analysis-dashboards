@@ -204,7 +204,7 @@ layout = html.Div(
                         html.Div(
                             [
                                 html.Img(
-                                    src=('/assets/composition-plot.png'),
+                                    src=('/assets/composition-plot.PNG'),
                                     style={
                                         'height': '200px',
                                     }
@@ -256,7 +256,7 @@ layout = html.Div(
                         html.Div(
                             [
                                 html.Img(
-                                    src=('/assets/incident-map.png'),
+                                    src=('/assets/incident-map.PNG'),
                                     style={
                                         'height': '200px',
                                     }

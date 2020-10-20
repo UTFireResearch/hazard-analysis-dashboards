@@ -51,21 +51,21 @@ layout = html.Div(
                 html.Div(
                     [
                         html.A(
-                            html.Button("Hazard Analysis",
+                            html.Button("Tools Home",
                                         id="hazard-analysis",
                                         style={'width': '100%'}
                             ),
-                            href="/apps/hazard_analysis",
+                            href="/apps/table",
                             style={"float": "right", 'width': '250px'}
                         ),
-                        html.A(
-                            html.Button("Vent Sizing",
-                                        id="vent-sizing",
-                                        style={'width': '100%'}
-                            ),
-                            href="/apps/vent_calculator",
-                            style={"float": "right", 'width': '250px'}
-                        )
+                        # html.A(
+                        #     html.Button("Vent Sizing",
+                        #                 id="vent-sizing",
+                        #                 style={'width': '100%'}
+                        #     ),
+                        #     href="/apps/vent_calculator",
+                        #     style={"float": "right", 'width': '250px'}
+                        # )
                     ],
                     className="one-third column",
                     id="button",

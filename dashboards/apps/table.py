@@ -63,7 +63,8 @@ layout = html.Div(
                                         id="building-deflagration",
                                         style={'width':'100%'}
                             ),
-                            href="/apps/table",
+                            href="https://www.utfireresearch.com",
+                            target='_blank ',
                             style={"float": "right", "width": "240px"}
                         ),
                     ],
@@ -75,7 +76,7 @@ layout = html.Div(
             id="header",
             className='row flex-display',
             style={
-                "margin-bottom": "25px"
+                "margin-bottom": "30px"
             }
         ), #-----------------------END HEADER DIV------------------------------
 
@@ -87,19 +88,79 @@ layout = html.Div(
                         html.Div(
                             [
                                 html.P(
-                                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Viverra nibh cras pulvinar mattis nunc sed. Adipiscing at in tellus integer feugiat scelerisque varius morbi. Viverra tellus in hac habitasse platea. Ut sem nulla pharetra diam sit amet. Nunc sed blandit libero volutpat sed cras ornare arcu. Diam phasellus vestibulum lorem sed risus ultricies tristique. Aliquam sem et tortor consequat id porta nibh venenatis cras.'
+                                    [
+                                        'Lithium-ion batteries are already a common feature of society, powering billions of electronic devices. Growth in renewable energy and electric vehicles in the future is only likely to increase the number of these batteries. By 2030, global production of lithium-ion batteries is expected to reach nearly 2 TWh. Consequently, the risks posed by lithium-ion battery failures will only grow and it is essential that they are sufficiently understood.',
+                                        html.Br(),
+                                        html.Br(),
+                                        'These tools are intended to help policy-makers and researches better understand lithium-ion fire and explosion hazards.'
+                                        #'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Viverra nibh cras pulvinar mattis nunc sed. Adipiscing at in tellus integer feugiat scelerisque varius morbi. Viverra tellus in hac habitasse platea. Ut sem nulla pharetra diam sit amet. Nunc sed blandit libero volutpat sed cras ornare arcu. Diam phasellus vestibulum lorem sed risus ultricies tristique. Aliquam sem et tortor consequat id porta nibh venenatis cras.'
+                                    ]
                                 )
                             ],
                             style={'margin-right': '25px', 'margin-left': '25px'}
                         ),
                     ],
-                    className="pretty_container eight columns"
+                    className="pretty_container seven columns"
                 ),
                 html.Div(
                     [
-
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H6(
+                                            ['Global Battery Production', html.Br(),'(2020)'],
+                                            style={'textAlign':'left'}
+                                        ),
+                                    ],
+                                    className='two-thirds column',
+                                    style={'margin-left':'20px'}
+                                ),
+                                html.Div(
+                                    [
+                                        html.H6(
+                                            '350 GWh',
+                                            style={'line-height': '40px', 'textAlign': 'center','margin-left': '35px'},
+                                        ),
+                                    ],
+                                    className='one-third column',
+                                    style={'display':'flex','align-items':'center'},
+                                ),
+                            ],
+                            className='row flex-display',
+                        ),
+                        html.Hr(style={'margin-top':'10px','margin-bottom':'10px'}),
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.H6(
+                                            [
+                                                'Battery and Energy Storage',
+                                                html.Br(),
+                                                'Market (2019)'
+                                            ],
+                                            style={'textAlign':'left'}
+                                        )
+                                    ],
+                                    className='two-thirds column',
+                                    style={'margin-left': '20px'}
+                                ),
+                                html.Div(
+                                    [
+                                        html.H6(
+                                            '$44.2 Billion',
+                                            style={'line-height': '40px', 'textAlign': 'center','margin-left': '35px'},
+                                        ),
+                                    ],
+                                    className='one-third column',
+                                    style={'display':'flex','align-items':'center'},
+                                )
+                            ],
+                            className='row flex-display'
+                        ),
                     ],
-                    className="pretty_container four columns",
+                    className="pretty_container five columns",
                 ),
             ],
             id="intro-row",
@@ -121,7 +182,9 @@ layout = html.Div(
                                 #-------------CONTENT PARAGRAPH-----------------
                                 html.Div(
                                     [
-                                        html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+                                        html.P(children='When lithium-ion batteries fail, they produce large volumes of flammable and toxic gases. The composition of these gases depends on a variety of factors including battery chemistry, form factor, and state-of-charge (SOC). This tool curates available data from academic literature characterizing the composition of battery vent gases and provides estimated flammability parameters for these mixtures.'
+                                        #'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                                        ),
                                     ],
                                     className='row flex-display',
                                 ),
@@ -172,7 +235,9 @@ layout = html.Div(
                                 #---------DESCRIPTION CONTENT-------------------
                                 html.Div(
                                     [
-                                        html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+                                        html.P(children='Batteries are ubiquitous in modern society and range in scale from mega-watt energy storage systems to the single cells in mobile phones. The damage that results when these systems fail covers a similar scale. This tool provides access to a curated database of battery failure incidents at all scales and around the globe. While the number of jurisdictions involved makes it difficult to build a truly comprehensive dataset, the aim is to allow researchers to understand the scope of battery safety issues and identify failure patterns.'
+                                        #'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                                        )
                                     ]
                                 ),
                                 #----------LINK BUTTON--------------------------
@@ -181,7 +246,7 @@ layout = html.Div(
                                                 id="building-deflagration",
                                                 style={'width':'100%', 'margin-top':'20px'}
                                     ),
-                                    href='/apps/hazard_analysis',
+                                    #href='/apps/incide',
                                 ),
                             ],
                             className='two-thirds column',
@@ -222,21 +287,87 @@ layout = html.Div(
                                 #---------------CONTENT PARAGRAPH---------------
                                 html.Div(
                                     [
-                                        html.P(children='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+                                        html.P(children='A common mitigation strategy for legacy fire and explosion hazards is the use of blow-off vents to prevent injury and structural damage by relieving pressure. This tool uses our battery vent gas dataset in conjunction with the process described in NFPA 68 to provide a first-order estimate of the deflagration vent area needed to protect a structure against a given explosion event involving battery vent gas.'
+                                        #'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                                        )
                                     ]
                                 ),
                                 #--------------TOOL LINK BUTTON-----------------
                                 html.A(
-                                    [
                                         html.Button("Go To Tool",
                                                     id="building-deflagration",
                                                     style={'width':'100%', 'margin-top':'20px'}
                                         ),
-                                    ],
+                                        href='/apps/vent_calculator'
                                 ),
                             ],
                             className='two-thirds column',
                             style={'margin-left': '25px'}
+                        ),
+                        #-----------------FOURTH ROW IMAGE COLUMN---------------
+                        html.Div(
+                            [
+                                html.Img(
+                                    src=('/assets/Vent_Size.png'),
+                                    style={
+                                        'height': '200px',
+                                    }
+                                ),
+                            ],
+                            className='one-third column',
+                            style={'textAlign': 'center'}
+                        ),
+                    ],
+                    className="pretty_container twelve columns",
+                ),
+            ],
+            className="row flex-display",
+        ),
+        #-------------------FIFTH CONTENT ROW-----------------------------------
+        html.Div(
+            [   #------------------FIFTH ROW PRETTY CONTAINER-------------------
+                html.Div(
+                    [   #-----------------FIFTH ROW CONTENT COLUMN--------------
+                        html.Div(
+                            [   #---------CONTENT TITLE------------------------
+                                html.Div(
+                                    [
+                                        html.H6(children='Explosion Calculator')
+                                    ],
+                                    className="row flex-display"
+                                ),
+                                #---------DESCRIPTION CONTENT-------------------
+                                html.Div(
+                                    [
+                                        html.P(children='When lithium-ion batteries fail, they produce large volumes of flammable and toxic gases. The composition of these gases depends on a variety of factors including battery chemistry, form factor, and state-of-charge (SOC). This tool uses our dataset of battery vent gas to estimate the time vs. pressure history of a explosion due to burning battery vent gas.'
+                                        #'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                                        )
+                                    ]
+                                ),
+                                #----------LINK BUTTON--------------------------
+                                html.A(
+                                    html.Button("Go To Tool",
+                                                id="building-deflagration",
+                                                style={'width':'100%', 'margin-top':'20px'}
+                                    ),
+                                    href='/apps/explosion_calculator',
+                                ),
+                            ],
+                            className='two-thirds column',
+                            style={'margin-left': '25px'}
+                        ),
+                        #-----------------FIFTH ROW IMAGE COLUMN---------------
+                        html.Div(
+                            [
+                                html.Img(
+                                    src=('/assets/firework.png'),
+                                    style={
+                                        'height': '200px',
+                                    }
+                                ),
+                            ],
+                            className='one-third column',
+                            style={'textAlign': 'center'}
                         ),
                     ],
                     className="pretty_container twelve columns",

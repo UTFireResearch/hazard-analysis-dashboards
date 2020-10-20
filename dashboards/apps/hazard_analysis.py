@@ -20,23 +20,25 @@ from .util import (
 )
 
 
-# Create app layout
+#--------------------------MAIN PAGE CONTAINER---------------------------------
 layout = html.Div(
-    [
+    [   #-----------------------HEADER BAR DIV---------------------------------
         html.Div(
-            [
+            [   #---------------------LEFT HEADER COLUMN-----------------------
                 html.Div(
-                    [
+                    [   #-----------------UT LOGO------------------------------
                         html.Img(
                             src=("/assets/shield.png"),
                             style={
                                 "height": "60px",
                                 "width": "auto",
+                                'textAlign': 'center',
                             }
                         )
                     ],
                     id="logo",
                     className='one-third column',
+                    style={'textAlign':'left'}
                 ),
                 html.Div(
                     [
@@ -51,21 +53,21 @@ layout = html.Div(
                 html.Div(
                     [
                         html.A(
-                            html.Button("Building Deflagration",
+                            html.Button("Tools Home",
                                         id="building-deflagration",
                                         style={'width': '100%'}
                             ),
-                            href="/apps/explosion_calculator",
+                            href="/apps/table",
                             style={"float": "right", 'width': '250px'}
                         ),
-                        html.A(
-                            html.Button("Vent Sizing",
-                                        id="vent-sizing",
-                                        style={'width': '100%'}
-                            ),
-                            href="/apps/vent_calculator",
-                            style={"float": "right","width": '250px'}
-                        )
+                        # html.A(
+                        #     html.Button("Vent Sizing",
+                        #                 id="vent-sizing",
+                        #                 style={'width': '100%'}
+                        #     ),
+                        #     href="/apps/vent_calculator",
+                        #     style={"float": "right","width": '250px'}
+                        # )
                     ],
                     className="one-third column",
                     id="button",

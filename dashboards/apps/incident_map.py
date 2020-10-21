@@ -43,70 +43,85 @@ incident_options = [
     for type in INCIDENTS
 ]
 
-YEAR_RANGE = [2000,2021]
+YEAR_RANGE = [2006,2021]
 
 #------------------------CONTAINER FOR WHOLE LAYOUT
 layout = html.Div(
-    [
-        #---------------------TOP MAIN HEADER----------------------------------
+    [   #-----------------------HEADER BAR DIV---------------------------------
         html.Div(
-            [   #------------------------UT LOGO--------------------------------
+            [   #---------------------LEFT HEADER COLUMN-----------------------
                 html.Div(
-                    [
+                    [   #-----------------UT LOGO------------------------------
                         html.Img(
                             src=("/assets/shield.png"),
                             style={
                                 "height": "60px",
                                 "width": "auto",
+                                "textAlign": 'center',
                             }
                         )
                     ],
                     id="logo",
-                    className="one-third column",
-                    style={"textAlign": "left"}
+                    style={'textAlign': 'left'},
+                    className='one-third column',
                 ),
-                #---------------------TITLE AND SUBTITLE------------------------
+                #---------------------CENTER HEADER COLUMN---------------------
                 html.Div(
-                    [
+                    [   #-------------------HEADER TITLE-----------------------
                         html.H3(
-                            "Battery Fire and Explosion Incidents",
-                            style={"margin-bottom": "0px"}
+                            'Battery Fire and Explosion Incidents:',
+                            style={'margin-bottom': '5px'}
                         ),
-                        html.H5(
-                            "Database Tools",
+                        html.H6(
+                            'Database Tools',
+                            style={'margin': '0px'}
                         )
                     ],
                     id="title",
-                    className="one-half column",
-                    style={"margin-bottom":"30px"}
-                    ),
-                #--------------------PAGE LINK BUTTONS--------------------------
+                    className='one-half column',
+                    style={"margin-bottom": "5px", "margin-top": "5px",'textAlign': 'center'}
+                ),
+                #--------------------LEGACY NAVIGATION BUTTONS-----------------
+                #---------------------RIGHT HEADER COLUMN----------------------
                 html.Div(
                     [
-                        html.A(                 #Hazard Analysis Buttton
-                            html.Button("Hazard Analysis",
-                                        id="hazard-analysis",
-                                        style={'width': '100%'}
-                            ),
-                            href="/apps/hazard_analysis",
-                            style={"float": "right", 'width': '250px'}
-                        ),
-                        html.A(                 #Building Deflagration Button
-                            html.Button("Building Deflagration",
+                        # html.A(
+                        #     html.Button("Building Deflagration",
+                        #                 id="building-deflagration",
+                        #                 style={'width': '100%'}
+                        #     ),
+                        #     href="/apps/explosion_calculator",
+                        #     style={"float": "right", 'width': '250px'}
+                        # ),
+                        # html.A(
+                        #     html.Button("Vent Sizing",
+                        #                 id="vent-sizing",
+                        #                 style={'width': '100%'}
+                        #     ),
+                        #     href="/apps/vent_calculator",
+                        #     style={"float": "right","width": '250px'}
+                        # ),
+                        html.A(
+                            html.Button("Tools Home",
                                         id="building-deflagration",
-                                        style={'width': '100%'}
+                                        style={'width':'100%'}
                             ),
-                            href="/apps/explosion_calculator",
-                            style={"float":"right", 'width': '250px'}
-                        )
-                    ]
-                )
+                            href='/apps/table',
+                            style={"float": "right", "width": "240px"}
+                        ),
+                    ],
+                    className="one-third column",
+                    id="button",
+                    style={'margin-right': '10px'}
+                ),
             ],
-                #---------------------HEADER STYLE------------------------------
-                id="header",
-                className="row flex-display",
-                style={"margin-bottom": "25px"}
-        ),
+            id="header",
+            className='row flex-display',
+            style={
+                "margin-bottom": "30px"
+            }
+        ), #-----------------------END HEADER DIV------------------------------
+
         #--------------------------FIRST CONTENT ROW----------------------------
         html.Div(
             [   #--------------------DATA HOLDER--------------------------------
@@ -196,7 +211,23 @@ layout = html.Div(
                                     ],
                                     id='hurt_number',
                                     className='mini_container',
-                                )
+                                ),
+                                html.Div(
+                                    [
+                                        html.H6(id='yMax', children='1000'),
+                                        html.H6(id='yMin', children='1000'),
+                                    ],
+                                    id='slider-test',
+                                    className='mini_container',
+                                ),
+                                html.Div(
+                                    [
+                                        html.H6(id='sMax', children='1000'),
+                                        html.H6(id='sMin', children='1000'),
+                                    ],
+                                    id='graph-test',
+                                    className='mini_container',
+                                ),
                             ],
                             id='info-container',
                             className='row container-display',
@@ -302,14 +333,23 @@ def filter_incidents(df,year_slider,applications, incidents):
 #     return idf
 
 # Slider -> count graph
-@app.callback(Output("year_slider", "value"), [Input("count_graph", "selectedData")])
+@app.callback(
+    [
+        Output("year_slider", "value"),
+        Output('sMax', 'children'),
+        Output('sMin', 'children'),
+    ],
+    [
+        Input("count_graph", "selectedData")
+    ]
+)
 def update_year_slider(count_graph_selected):
 
     if count_graph_selected is None:
         return [YEAR_RANGE[0], YEAR_RANGE[1]]
 
     nums = [int(point["pointNumber"]) for point in count_graph_selected["points"]]
-    return [min(nums) + 2000, max(nums) + 2001]
+    return [ [min(nums) + YEAR_RANGE[0], max(nums) + (YEAR_RANGE[0]+1)], min(nums), max(nums)]
 
 #APPLICATION RADIO ---> DROPDOWN UPDATE
 @app.callback(
@@ -330,6 +370,8 @@ def application_status(status):
         Output("iNumber", "children"),
         Output("kNumber", "children"),
         Output("hNumber", "children"),
+        Output("yMax", "children"),
+        Output('yMin', 'children'),
     ],
     [
         Input('incident_data', 'children'),
@@ -338,7 +380,7 @@ def application_status(status):
         Input("year_slider", "value"),
     ],
 )
-def update_well_text(data, application_types, incident_types, year_slider):
+def update_summary_text(data, application_types, incident_types, year_slider):
 
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
@@ -363,7 +405,7 @@ def update_well_text(data, application_types, incident_types, year_slider):
     #GETTTING TOTALS FOR INJURIES
     hSum =dff['Injured'].sum()
 
-    return [dff.shape[0], kSum, hSum]
+    return [dff.shape[0], kSum, hSum, year_slider[1],year_slider[0]]
 
 #-------------------MAKE MAP OBJECT--------------------------------------------
 @app.callback(
@@ -478,7 +520,7 @@ def make_count_graph(data,year_slider,applications, incidents):
     #CREATE GRAPH SPECIFIC DATAFRAME
     Grdf = fidf[['_id','Date',]]
     Grdf.index = Grdf['Date']
-    Grdf = Grdf.resample('Y').count()
+    Grdf = Grdf.resample('A', label='left', closed='right').count()
 
     #fidf = filter_incidents(idf,[1990,2020])
 

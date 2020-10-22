@@ -16,6 +16,9 @@ from .util import get_incident_data_lean
 
 mapbox_access_token = 'pk.eyJ1Ijoic21hdHRoZXdzOTUiLCJhIjoiY2tnOXZ6bHI2MDE3YTJybXVnZTlmZHQ2aiJ9.4-K3Y_0bc4Z-KJVwNn-TkA'
 
+MASTER_DATAFRAME = None
+FILTERED_DATAFRAME = None
+
 main_map_layout = dict(
     autosize=True,
     automargin=True,
@@ -28,8 +31,8 @@ main_map_layout = dict(
     mapbox=dict(
         accesstoken=mapbox_access_token,
         style="light",
-        #center=dict(lon=0, lat=0),
-        #zoom=1.5,
+        center=dict(lon=0, lat=0),
+        zoom=0.9,
     ),
 )
 
@@ -44,6 +47,19 @@ incident_options = [
 ]
 
 YEAR_RANGE = [2006,2021]
+
+styles = {
+    'pre': {
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll'
+    }
+}
+
+DATA_LAYOUT= html.Div(
+    [
+
+    ]
+)
 
 #------------------------CONTAINER FOR WHOLE LAYOUT
 layout = html.Div(
@@ -212,22 +228,22 @@ layout = html.Div(
                                     id='hurt_number',
                                     className='mini_container',
                                 ),
-                                html.Div(
-                                    [
-                                        html.H6(id='yMax', children='1000'),
-                                        html.H6(id='yMin', children='1000'),
-                                    ],
-                                    id='slider-test',
-                                    className='mini_container',
-                                ),
-                                html.Div(
-                                    [
-                                        html.H6(id='sMax', children='1000'),
-                                        html.H6(id='sMin', children='1000'),
-                                    ],
-                                    id='graph-test',
-                                    className='mini_container',
-                                ),
+                                # html.Div(
+                                #     [
+                                #         html.H6(id='yMax', children='1000'),
+                                #         html.H6(id='yMin', children='1000'),
+                                #     ],
+                                #     id='slider-test',
+                                #     className='mini_container',
+                                # ),
+                                # html.Div(
+                                #     [
+                                #         html.H6(id='sMax', children='1000'),
+                                #         html.H6(id='sMin', children='1000'),
+                                #     ],
+                                #     id='graph-test',
+                                #     className='mini_container',
+                                # ),
                             ],
                             id='info-container',
                             className='row container-display',
@@ -254,8 +270,11 @@ layout = html.Div(
         html.Div(
             [
                 html.Div(
-                    [dcc.Graph(id="map_graph")],
+                    [
+                        dcc.Graph(id="map_graph")
+                    ],
                     className="pretty_container eight columns",
+                    style={'dispaly': 'flex', 'alignItems': 'center'}
                 ),
                 html.Div(
                     [
@@ -264,35 +283,163 @@ layout = html.Div(
                             children='Incident Information',
                             style={'textAlign': 'center'}
                         ),
-                        html.Hr(
-                            style={'margin-top': '10px', 'margin-bottom': '10px'}
-                        ),
                         html.P(
-                            id='info_date',
-                            children='Date:',
-
+                            '(Click on map points)',
+                            style={'textAlign': 'center'}
                         ),
                         html.Hr(
                             style={'margin-top': '10px', 'margin-bottom': '10px'}
                         ),
-                        html.P(
-                            id='info_place',
-                            children='Location:',
+                        html.Div(
+                            [   html.Div(
+                                    [
+                                            html.P(
+                                                children='Date:',
+                                                style={'float':'left'}
+                                            ),
+                                    ],
+                                    className='one-half column'
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            id='info_date',
+                                            children='----',
+                                            style={'float':'right'},
+                                        ),
+                                    ],
+                                    className='one-half column'
+                                ),
+                            ],
+                            className='row flex-display',
                         ),
                         html.Hr(
                             style={'margin-top': '10px', 'margin-bottom': '10px'}
                         ),
-                        html.P(
-                            id='info_application',
-                            children='Application:',
+                        html.Div(
+                            [
+                                html.Div(
+                                    [
+                                        html.P(
+                                            children='Location:',
+                                            style={'textAlign': 'left'}
+                                        ),
+                                    ],
+                                    className='one-half column'
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            id='info_place',
+                                            children='----',
+                                            style={'textAlign':'right'}
+                                        )
+                                    ],
+                                    className='one-half column'
+                                ),
+                            ],
+                            className='row flex-display',
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'}
+                        ),
+                        html.Div(
+                            [   html.Div(
+                                    [
+                                        html.P(
+                                            children='Application:',
+                                            style={'textAlign': 'left'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            id='info_application',
+                                            children='----',
+                                            style={'textAlign':'right'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                            ],
+                            className='row flex-display',
                         ),
                         html.Hr(
                             style={'margin-top': '10px', 'margin-bottom': '10px'},
                         ),
-                        html.P(
-                            id='info_description',
-                            children='Description:',
+                        html.Div(
+                            [   html.Div(
+                                    [
+                                        html.P(
+                                            children='Injured:',
+                                            style={'textAlign': 'left'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            id='info_injured',
+                                            children='----',
+                                            style={'textAlign':'right'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                            ],
+                            className='row flex-display',
                         ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'},
+                        ),
+                        html.Div(
+                            [   html.Div(
+                                    [
+                                        html.P(
+                                            children='Killed:',
+                                            style={'textAlign': 'left'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            id='info_killed',
+                                            children='----',
+                                            style={'textAlign':'right'}
+                                        ),
+                                    ],
+                                    className='one-half column',
+                                ),
+                            ],
+                            className='row flex-display',
+                        ),
+                        html.Hr(
+                            style={'margin-top': '10px', 'margin-bottom': '10px'},
+                        ),
+                        html.Div(
+                            [
+                                html.P(
+                                    children='Description:',
+                                    style={'textAlign': 'left'}
+                                ),
+                            ],
+                            className='row flex-display'
+                        ),
+                        html.Div(
+                            [
+                                html.P(
+                                    id='info_description',
+                                    children='----',
+                                    style={'padding': '15px'}
+                                )
+                            ],
+                            className='row flex-display',
+                        )
                     ],
                     className="pretty_container four columns",
                 )
@@ -300,8 +447,20 @@ layout = html.Div(
             id="third_row",
             className="row flex-display"
         ),
+        #----------------------THIRD CONTENT ROW--------------------------------
+        html.Div(
+            [
+                html.Pre(
+                    id='click-data',
+                    style=styles['pre'],
+                ),
+            ],
+            id='fourth_row',
+            className='row flex-display',
+        ),
     ]
 )
+#-----------------------END MAIN CONTENT DIV------------------------------------
 
 def filter_incidents(df,year_slider,applications, incidents):
 
@@ -439,12 +598,14 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
     idf['Date'] = pd.to_datetime(idf['Date'])
 
     #FILTER INCIDENT DATAFRAME BASED ON USER FILTER CRITERIA
-    fidf = filter_incidents(idf, YEAR_RANGE, applications, incidents)
+    fidf = filter_incidents(idf, years, applications, incidents)
     #DROP ANY INCIDENT FOR WHICH THERE ARE NO COORDINATES (SUCH AS ON PLANES)
     fidf = fidf.dropna()
 
     #SPLIT COORDINATES COLUMN OF THE DATAFRAME INTO TWO COLUMNS FOR LATITUDE AND LONGITUDE
     fidf[['Latitude','Longitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
+
+    tidf = fidf[['_id','Incident','Latitude','Longitude','Place']]
 
     traces = []
     for incident_class, event in fidf.groupby('Incident'):
@@ -452,8 +613,8 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
             type="scattermapbox",
             lon=event["Longitude"],
             lat=event["Latitude"],
-            text=event["Date"],
-            customdata=event["Date"],
+            text=event['Place'],
+            customdata=event['_id'],
             name=INCIDENTS[incident_class],
             marker=dict(size=8, opacity=0.6),
             )
@@ -464,9 +625,9 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
             lon = float(main_graph_layout["mapbox.center"]["lon"])
             lat = float(main_graph_layout["mapbox.center"]["lat"])
             zoom = float(main_graph_layout["mapbox.zoom"])
-            layout["mapbox"]["center"]["lon"] = lon
-            layout["mapbox"]["center"]["lat"] = lat
-            layout["mapbox"]["zoom"] = zoom
+            main_map_layout["mapbox"]["center"]["lon"] = lon
+            main_map_layout["mapbox"]["center"]["lat"] = lat
+            main_map_layout["mapbox"]["zoom"] = zoom
 
     figure = dict(data=traces, layout=main_map_layout)
     return figure
@@ -557,3 +718,56 @@ def make_count_graph(data,year_slider,applications, incidents):
 
     figure = dict(data=gData, layout=lDict_count)
     return figure
+
+@app.callback(
+    [
+        Output('info_date', 'children'),
+        Output('info_application', 'children'),
+        Output('info_place', 'children'),
+        Output('info_description', 'children'),
+    ],
+    [
+        Input('map_graph', 'clickData'),
+        Input('incident_data', 'children')
+    ]
+)
+def update_click(clickData, data):
+
+    flat_data = json.loads(data)
+    flat_data = pd.json_normalize(flat_data)
+    idf = pd.DataFrame(flat_data)
+    idf = idf.rename(columns=
+        {"incident":"Incident",
+         "date.stamp": "Date",
+         "place.location.type": "Type",
+         "place.location.coordinates": "Coordinates",
+         "place.placeName": 'Place',
+         "application.appID": 'appID',
+         "casualties.killed": 'Killed',
+         "casualties.injured": 'Injured',
+        }
+    )
+    idf['Date'] = pd.to_datetime(idf['Date'])
+
+    if clickData is not None:
+        step1 = clickData['points']
+        step2 = step1[0]
+        step3 = step2['customdata']
+        chosen = step3
+        picked = idf[idf['_id'] == step3]
+    else:
+        picked = idf
+
+
+
+    pDate = picked.iloc[0]['Date']
+    pDate = pDate.to_pydatetime()
+    pDate = pDate.strftime('%B %d, %Y')
+
+    pApplication = picked.iloc[0]['appID']
+
+    pPlace = picked.iloc[0]['Place']
+
+    pDescription = picked.iloc[0]['description']
+
+    return [pDate, pApplication, pPlace, pDescription]

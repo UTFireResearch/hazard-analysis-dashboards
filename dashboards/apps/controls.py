@@ -31,6 +31,8 @@ APPLICATIONS = {
     'Tools': 'Power Tools',
     'Medical': 'Medical Devices',
     'Post-Life': 'Post-Life',
+    'Smoking': 'E-Cigarettes',
+    'Toys': 'Toys',
     'Unknown': 'Unknown'
 }
 

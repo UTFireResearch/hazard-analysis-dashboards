@@ -545,14 +545,14 @@ def update_summary_text(data, application_types, incident_types, year_slider):
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
     idf = idf.rename(columns=
-        {"incident":"Incident",
+        {"incident.type":"Incident",
+         "incident.killed":"Killed",
+         "incident.injured":"Injured",
          "date.stamp": "Date",
          "place.location.type": "Type",
          "place.location.coordinates": "Coordinates",
          "place.placeName": 'Place',
          "application.appID": 'appID',
-         "casualties.killed": 'Killed',
-         "casualties.injured": 'Injured',
         }
     )
     idf['Date'] = pd.to_datetime(idf['Date'])
@@ -585,14 +585,14 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
     idf = idf.rename(columns=
-        {"incident":"Incident",
+        {"incident.type":"Incident",
+         "incident.killed":"Killed",
+         "incident.injured":"Injured",
          "date.stamp": "Date",
          "place.location.type": "Type",
          "place.location.coordinates": "Coordinates",
          "place.placeName": 'Place',
          "application.appID": 'appID',
-         "casualties.killed": 'Killed',
-         "casualties.injured": 'Injured',
         }
     )
     idf['Date'] = pd.to_datetime(idf['Date'])
@@ -665,7 +665,9 @@ def make_count_graph(data,year_slider,applications, incidents):
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
     idf = idf.rename(columns=
-        {"incident":"Incident",
+        {"incident.type":"Incident",
+         "incident.killed":"Killed",
+         "incident.injured":"Injured",
          "date.stamp": "Date",
          "place.location.type": "Type",
          "place.location.coordinates": "Coordinates",

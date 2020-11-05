@@ -448,16 +448,16 @@ layout = html.Div(
             className="row flex-display"
         ),
         #----------------------THIRD CONTENT ROW--------------------------------
-        html.Div(
-            [
-                html.Pre(
-                    id='click-data',
-                    style=styles['pre'],
-                ),
-            ],
-            id='fourth_row',
-            className='row flex-display',
-        ),
+        # html.Div(
+        #     [
+        #         html.Pre(
+        #             id='click-data',
+        #             style=styles['pre'],
+        #         ),
+        #     ],
+        #     id='fourth_row',
+        #     className='row flex-display',
+        # ),
     ]
 )
 #-----------------------END MAIN CONTENT DIV------------------------------------
@@ -600,7 +600,7 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
     #FILTER INCIDENT DATAFRAME BASED ON USER FILTER CRITERIA
     fidf = filter_incidents(idf, years, applications, incidents)
     #DROP ANY INCIDENT FOR WHICH THERE ARE NO COORDINATES (SUCH AS ON PLANES)
-    fidf = fidf.dropna()
+    fidf = fidf.dropna(subset=['Coordinates'])
 
     #SPLIT COORDINATES COLUMN OF THE DATAFRAME INTO TWO COLUMNS FOR LATITUDE AND LONGITUDE
     fidf[['Latitude','Longitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)

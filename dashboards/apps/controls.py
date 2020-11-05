@@ -21,3 +21,24 @@ GAS_COLORS = dict(
     O2="#D4B9DA",
     CH3OH="#FA9FB5"
 )
+
+APPLICATIONS = {
+    #FORMAT {'appID': 'User Friendly Label'}
+    'Vehicle': 'Electric Vehicles',
+    'Storage': 'Energy Storage',
+    'Electronics': 'Personal Electronics',
+    'Consumer': 'Consumer Devices',
+    'Tools': 'Power Tools',
+    'Medical': 'Medical Devices',
+    'Post-Life': 'Post-Life',
+    'Smoking': 'E-Cigarettes',
+    'Toys': 'Toys',
+    'Unknown': 'Unknown'
+}
+
+INCIDENTS = {
+    #FORMAT {'Internal String': 'External Label'}
+    'Cell Failure': 'Cell Failure',
+    'Fire': 'Fire',
+    'Explosion': 'Explosion'
+}

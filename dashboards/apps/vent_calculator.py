@@ -61,6 +61,7 @@ layout = html.Div(
                 html.Div(
                     [
                         html.A(                 #Hazard Analysis Buttton
+
                             html.Button("Tools Home",
                                         id="hazard-analysi",
                                         style={'width': '100%'}

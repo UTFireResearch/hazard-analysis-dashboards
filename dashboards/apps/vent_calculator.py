@@ -61,21 +61,22 @@ layout = html.Div(
                 html.Div(
                     [
                         html.A(                 #Hazard Analysis Buttton
-                            html.Button("Hazard Analysis",
-                                        id="hazard-analysis",
+
+                            html.Button("Tools Home",
+                                        id="hazard-analysi",
                                         style={'width': '100%'}
                             ),
-                            href="/apps/hazard_analysis",
+                            href="/apps/table",
                             style={"float": "right", 'width': '250px'}
                         ),
-                        html.A(                 #Building Deflagration Button
-                            html.Button("Building Deflagration",
-                                        id="building-deflagration",
-                                        style={'width': '100%'}
-                            ),
-                            href="/apps/explosion_calculator",
-                            style={"float":"right", 'width': '250px'}
-                        )
+                        # html.A(                 #Building Deflagration Button
+                        #     html.Button("Building Deflagration",
+                        #                 id="building-deflagration",
+                        #                 style={'width': '100%'}
+                        #     ),
+                        #     href="/apps/explosion_calculator",
+                        #     style={"float":"right", 'width': '250px'}
+                        # )
                     ]
                 )
             ],

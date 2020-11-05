@@ -11,7 +11,7 @@ dependencies:
   - flake8=3.7*
   - flask=1.1.1
   - numpy=1.13*
-  - pandas=1.1.4
+  - pandas=0.25.2
   - pip
   - python=3.6.9
   - pymongo[srv]=3.9.0

@@ -7,6 +7,7 @@ import math
 import copy
 import json
 import datetime as dt
+import pandas as pd
 
 
 from app import app

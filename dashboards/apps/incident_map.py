@@ -139,6 +139,17 @@ layout = html.Div(
             }
         ), #-----------------------END HEADER DIV------------------------------
 
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(children=[html.I('PLEASE NOTE: The database behind this page is still under active construction and the number of inicidents is likely to grow rapidly. Check back regularly.')])
+                    ],
+                    className='pretty_container twelve columns'
+                )
+            ],
+            className='row flex-display',
+        ),
         #--------------------------FIRST CONTENT ROW----------------------------
         html.Div(
             [   #--------------------DATA HOLDER--------------------------------

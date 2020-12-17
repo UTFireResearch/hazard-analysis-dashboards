@@ -79,7 +79,7 @@ layout = html.Div(
                 "magin-bottom": "25px"
             }
         ),
-        main_dropdowns,
+        main_dropdowns, #-------------EXPERIMENT SELECTION---------------------
         html.Div(
             [
                 html.Div(id='selected_experiment', style={'display': 'none'}),

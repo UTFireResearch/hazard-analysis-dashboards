@@ -242,11 +242,11 @@ layout = html.Div(
                                 ),
                                 #----------LINK BUTTON--------------------------
                                 html.A(
-                                    html.Button("Comign Soon",
+                                    html.Button("Go To Tool",
                                                 id="building-deflagration",
                                                 style={'width':'100%', 'margin-top':'20px'}
                                     ),
-                                    #href='/apps/incide',
+                                    href='/apps/incident_map',
                                 ),
                             ],
                             className='two-thirds column',

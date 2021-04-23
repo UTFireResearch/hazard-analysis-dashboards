@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import data_input, hazard_analysis, explosion_calculator, vent_calculator, incident_map, table
+from apps import data_input, hazard_analysis, explosion_calculator, vent_calculator, incident_map, table, t_squared, mesh_size, HGL_temp, steel_heating, react_balance, flame_size
 
 app.title = 'Battery Tools'
 
@@ -29,6 +29,18 @@ def display_page(pathname):
         return incident_map.layout
     elif pathname == '/apps/table':
         return table.layout
+    elif pathname == '/apps/t_squared':
+        return t_squared.layout
+    elif pathname == '/apps/mesh_size':
+        return mesh_size.layout
+    elif pathname == '/apps/flame_size':
+        return flame_size.layout
+    elif pathname == '/apps/steel_heating':
+        return steel_heating.layout
+    elif pathname == '/apps/reaction_balancer':
+        return react_balance.layout
+    elif pathname == '/apps/HGL_temp':
+        return HGL_temp.layout
     else:
         return html.Div([html.H3('404')])
 

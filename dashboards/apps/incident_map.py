@@ -47,7 +47,7 @@ incident_options = [
     for type in INCIDENTS
 ]
 
-YEAR_RANGE = [2006,2021]
+YEAR_RANGE = [2000,2023]
 
 styles = {
     'pre': {
@@ -479,7 +479,7 @@ def filter_incidents(df,year_slider,applications, incidents):
     dff = df[
         df['appID'].isin(applications)
         & df['Incident'].isin(incidents)
-        & (df["Date"] > dt.datetime(year_slider[0],1,1))
+        & (df["Date"] >= dt.datetime(year_slider[0],1,1))
         & (df["Date"] < dt.datetime(year_slider[1],1,1))
     ]
     return dff
@@ -615,7 +615,7 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
     fidf = fidf.dropna(subset=['Coordinates'])
 
     #SPLIT COORDINATES COLUMN OF THE DATAFRAME INTO TWO COLUMNS FOR LATITUDE AND LONGITUDE
-    fidf[['Latitude','Longitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
+    fidf[['Longitude','Latitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
 
     tidf = fidf[['_id','Incident','Latitude','Longitude','Place']]
 

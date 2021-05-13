@@ -1,8 +1,19 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import numpy as np
+import pandas as pd
+import dash_table as dt
 import dash_table
-from dash.dependencies import Input, Output
+import copy
+
+from app import app
+from dash.dependencies import Input, Output, State
+from .controls import plot_layout
+
+columntest=[{'name': 'Height (m)', 'id': 'Height (m)'},
+            {'name': 'Heskestad Temp.', 'id': 'Heskestad Temp.'},
+            {'name': 'McCaffrey Temp.', 'id': 'McCaffrey Temp.'}]
 
 #----------------------APPlICATION LAYOUT---------------------------------------
 layout = html.Div(
@@ -186,10 +197,11 @@ layout = html.Div(
                                     style={'margin-right':'35px', 'margin-top': '5px'}
                                 ),
                                 dcc.Input(
-                                id='flame_size_in',
-                                type='number',
-                                placeholder='kW',
-                                size='15',
+                                    id='flame_size_in',
+                                    type='number',
+                                    placeholder='kW',
+                                    size='15',
+                                    value=400,  #DELETE ME!!!! -- (PROBABABLY)
                                 ),
                                 html.P(
                                     'kW',
@@ -212,10 +224,11 @@ layout = html.Div(
                                     style={'margin-right':'35px', 'margin-top': '5px'}
                                 ),
                                 dcc.Input(
-                                id='flame_diameter_in',
-                                type='number',
-                                placeholder='m',
-                                size='15',
+                                    id='flame_diameter_in',
+                                    type='number',
+                                    placeholder='m',
+                                    size='15',
+                                    value=1,    #DELETE ME!!!!!! -- (PROBABLY)
                                 ),
                                 html.P(
                                     'm',
@@ -238,10 +251,11 @@ layout = html.Div(
                                     style={'margin-right':'35px', 'margin-top': '5px'}
                                 ),
                                 dcc.Input(
-                                id='flame_rad_frac',
-                                type='number',
-                                placeholder='',
-                                size='15',
+                                    id='flame_rad_frac',
+                                    type='number',
+                                    placeholder='',
+                                    size='15',
+                                    value=0.3   #DELETE ME!!!!! -- (PROBABLY)
                                 ),
                             ],
                             className="row flex-display",
@@ -262,8 +276,9 @@ layout = html.Div(
                                     "margin-left": '2px',
                                     "margin-bottom": '15px',
                                     "margin-top": '15px'
-                                    }
-                                )
+                                    },
+                                    n_clicks=0,
+                                ),
                             ],
                             className="row flex-display",
                             style={
@@ -280,7 +295,98 @@ layout = html.Div(
             ],
             className= "row flex-display",
         ),
-        #----------------BOTTOM ACKNOWLEDGEMENTS ROW---------------------------
+        #-------------------RESULTS ROW-----------------------------------------
+        html.Div(
+            [
+                #---------------RESULTS PRETTY CONTAINER------------------------
+                html.Div(
+                    [
+                        html.H5(
+                            html.B('Results:'),
+                            style={
+                            "margin-bottom": "15px",
+                            "color": "maroon"
+                            }
+                        ),
+                        html.H6(
+                            'Non-Dimensional HRR:',
+                            style={'margin-left':'15px'}
+                        ),
+                        html.P(
+                            'The characteristic fire size (Q*) is',
+                            style={'display':'inline-block', 'color':'black', 'padding-right':'5px', 'margin-left':'25px'},
+                        ),
+                        html.P(
+                            html.B(id='flame_char_size'),
+                            style={'display':'inline-block'},
+                        ),
+                        html.H6(
+                            'Heskestad Flame Height:',
+                            style={'margin-left':'15px'},
+                        ),
+                        html.P(
+                            html.B(id='flame_message1'),
+                            style={'margin-left':'25px'},
+                        ),
+                        html.P(
+                            html.B(id='flame_message2'),
+                            style={'margin-left':'25px'},
+                        ),
+                        # html.H6(
+                        #     'Heskestad and McCaffrey Plume Centerline Temperatures:',
+                        #     style={'margin-left':'15px', 'margin-top':'20px'}
+                        # ),
+                        dcc.Graph(
+                            id='centerline_graph',
+                            style={'margin-left':'20px', 'height':550, 'width':750}
+                        ),
+                    ],
+                    className='pretty_container eight columns',
+                ),
+                html.Div(
+                    [
+                        html.H5(
+                            html.B('Values:'),
+                            style={
+                            "margin-bottom": "15px",
+                            "color": "maroon"
+                            }
+                        ),
+                        dt.DataTable(
+                            id='flame_table',
+                            columns = columntest,
+                            data = [],
+                            fixed_rows={'headers': True},
+                            # style_table={'height': '100%', 'overflowY': 'auto'}
+                        ),
+                    ],
+                    className='pretty_container four columns'
+                )
+            ],
+            className='row flex-display',
+        ),
+        # html.Div(
+        #     [
+        #         html.Div(
+        #             [
+        #                 html.Div(
+        #                     [
+        #                         dt.DataTable(
+        #                             id='flame_table',
+        #                             columns = columntest,
+        #                             data = [],
+        #                             style_table={'height': '600px', 'overflowY': 'auto'}
+        #                         ),
+        #                     ],
+        #                     style={'width':'400px'},
+        #                 ),
+        #             ],
+        #             className='pretty_container twelve columns'
+        #         )
+        #     ],
+        #     className='row flex-display',
+        # ),
+        #----------------BOTTOM ACKNOWLEDGEMENTS ROW----------------------------
         html.Div(
             [
                 html.Div(
@@ -298,3 +404,163 @@ layout = html.Div(
         ),
     ],
 ), #---------------------END LAYOUT--------------------------------------------
+
+@app.callback(
+    [
+        Output('flame_char_size','children'),
+        Output('flame_message1','children'),
+        Output('flame_message2','children'),
+        Output('centerline_graph','figure'),
+        Output('flame_table','data'),
+        Output('flame_table','columns'),
+    ],
+    [
+        Input('flame_calc_button','n_clicks'),
+    ],
+    [
+        State('flame_size_in','value'),
+        State('flame_diameter_in','value'),
+        State('flame_rad_frac','value'),
+    ]
+)
+def flame_calc_execute(btn, size, diameter, radFrac):
+
+    columnd = [
+        'Height (m)',
+        'Heskestad Temp. (\u00B0C)',
+        'McCaffrey Temp. (\u00B0C)'
+    ]
+
+    flame_complete = True
+    flame_eMessage = ''
+
+    flame_data = []
+    flame_layout = copy.deepcopy(plot_layout)
+
+    flame_figure = dict(data=flame_data, layout=flame_layout)
+
+    inList = [size, diameter, radFrac]
+
+    if btn > 0:
+
+        D = diameter # m
+        Q = size # kW
+        X_r = radFrac
+
+        #  =================================
+        #  = Plume temperature calculation =
+        #  =================================
+
+        Q_c = (1-X_r) * Q
+        z_0 = 0.083 * Q**(2/5) -1.02 * D
+        L = -1.02 * D + 0.235*(Q**(2/5))
+        above_flame = 5*L
+
+        z = np.arange(L+L*0.3,L+above_flame,(L+above_flame)/50)
+        delta_T_0_hes = np.zeros(len(z))
+        delta_T_0_mcc = np.zeros(len(z))
+
+        for height in range(0,len(z)):
+            delta_T_0_hes[height] = 25 * (Q_c**(2/5)/(z[height]-z_0))**(5/3) + 20
+
+        for height in range(0,len(z)):
+            delta_T_0_mcc[height] = 22.3 * (Q**(2/5)/(z[height]))**(5/3) + 20
+
+        #  ======================
+        #  = Q_star calculation =
+        #  ======================
+
+        # Density (kg/m3)
+        rho = 1.204
+
+        # Specific heat (kJ/kg-K)
+        c_p = 1.005
+
+        # Ambient temperature (K)
+        T_inf = 293
+
+        # Gravitational acceleration
+        g = 9.81
+
+        Q_star = Q / (rho * c_p * T_inf * np.sqrt(g*D) * D**2)
+
+        height = L
+        cHeight = L*3.28
+
+        message1 = f'For a {size:.2f} kW fire with a diameter of {diameter:.2f} m'
+        message2 = f'The flame height is {height:.2f} m ({cHeight:.2f} ft)'
+
+        max1 = max(delta_T_0_hes)
+        max2 = max(delta_T_0_mcc)
+        max3 = max(max1, max2)
+        xLine = L
+
+        #===============================================
+        # ==========PLOTTING CODE=======================
+        #===============================================
+        flame_layout['title'] = 'Hakestad and McCaffrey Plume Centerline Temperatures:'
+        flame_layout['showlegend'] = True
+        flame_layout["xaxis"] = {"title": {"text": "Height (m)"}}
+        flame_layout["yaxis"] = {"title": {"text": "Plume Centerline Temperature (\u00B0C)"}}
+        flame_layout["xaxis"]['range'] = [0, L+above_flame]
+        flame_layout['shapes'] = [
+            {
+                'type':'line',
+                'x0': xLine,
+                'y0': 0,
+                'x1':xLine,
+                'y1': max3,
+                'line': {
+                    'color':'black',
+                    'width':2,
+                    'dash':'dashdot'
+                    }
+            }
+        ]
+
+        flame_data = [
+            dict(
+                type="scatter",
+                mode="lines",
+                x=z,
+                y=delta_T_0_hes,
+                name="Hekestad",
+                opacity=1,
+                hoverinfo="skip",
+            ),
+            dict(
+                type="scatter",
+                mode="lines",
+                x=z,
+                y=delta_T_0_mcc,
+                name="McCaffrey",
+                opacity=1,
+                hoverinfo="skip",
+            ),
+        ]
+
+        flame_figure = dict(data=flame_data, layout=flame_layout)
+
+        dhes = [round(i) for i in delta_T_0_hes]
+        dmcc = [round(k) for k in delta_T_0_mcc]
+        zr = [round(j,3) for j in z]
+
+        # dhes = []
+        # for i in range(len(delta_T_0_hes)):
+        #
+        #     dhes[i] = round(delta_T_0_hes[i],2)
+        #
+        # dmcc = []
+        # for i in range(len(delta_T_0_mcc)):
+        #
+        #     dmcc[i] = round(delta_T_0_mcc[i],2)
+
+        df = pd.DataFrame(list(zip(zr,dhes,dmcc)), columns=columnd)
+
+        dtable = df.to_dict('rows')
+        ctable = [{'name': i, 'id': i} for i in df.columns]
+
+        return 'Success', message1, message2, flame_figure, dtable, ctable
+
+    else:
+        return 'Fail', '', '', flame_figure, [], []

@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 from app import app
 from apps import data_input, hazard_analysis, explosion_calculator, vent_calculator, incident_map, table, t_squared, mesh_size, HGL_temp, steel_heating, react_balance, flame_size
 
-app.title = 'Battery Tools'
+app.title = 'Hazard Tools'
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),

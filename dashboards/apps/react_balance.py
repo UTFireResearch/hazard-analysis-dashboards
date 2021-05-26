@@ -619,6 +619,18 @@ def parse_formula(formula):
     else:
         return '', oList
 
+def react_in_check(finlist):
+    flag = False
+    eMessage = ''
+
+    for i in finlist:
+        if i <= 0:
+            eMessage = 'Please ensure that all values are greater than zero'
+            flag = FALSE
+
+    return flag, eMessage
+
+
 
 @app.callback(
     [
@@ -677,6 +689,10 @@ def test_call(btn, formula, y_CO, y_s, X_H, bg_1, bg_2, bg_3, bg_4, bg_5, bg_6, 
 
         #Parse the text formula and output a list with coefficients [C, H, O, N]
         message, coList = parse_formula(formula)
+
+        rinList = coList + [y_CO, y_s, X_H, bg_1, bg_2, bg_3, bg_4, bg_5, bg_6, bg_7]
+
+
 
         C = coList[0]
         H = coList[1]

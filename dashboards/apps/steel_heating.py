@@ -3,6 +3,8 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import numpy as np
 import dash_table as dt
+import pandas as pd
+
 import copy
 from dash.dependencies import Input, Output, State
 
@@ -73,58 +75,6 @@ layout = html.Div(
             }
         ), #-----------------------END HEADER DIV------------------------------
         #---------------START INSTRUCTION FLEX-ROW------------------------------
-        html.Div(
-            [
-                html.Div(
-                    [   html.H5(
-                            html.B('Instructions'),
-                            style={"margin-bottom": "15px", "color": "maroon"},
-                        ),
-                        html.P(
-                            'This tool calculates the lumped transient temperature of steel under fire conditions using standad time-temperature curves. You can select unprotected or protected steel, and various input parameters can be changed.',
-                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
-                        ),
-                        html.P(
-                            'The ISO 834 time-temperature curve is given by:',
-                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
-                        ),
-                        html.Img(
-                            src='/assets/steel_eq1_mod.PNG',
-                            style={'height': '25px', 'margin-left': '20px'}
-                        ),
-                        html.P(
-                            'The ASTM E119 time-temperature curve is approximated by:',
-                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
-                        ),
-                        html.Img(
-                            src='/assets/steel_eq2_mod.PNG',
-                            style={'height': '25px', 'margin-left': '20px'}
-                        ),
-                        html.P(
-                            'The rate of change temperature of the unprotected steel is given by:',
-                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
-                        ),
-                        html.Img(
-                            src='/assets/steel_eq3_mod.PNG',
-                            style={'height': '25px', 'margin-left': '20px'}
-                        ),
-                        html.P(
-                            'The rate of change temperature of the protected steel is given by:',
-                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
-                        ),
-                        html.Img(
-                            src='/assets/steel_eq4_mod.PNG',
-                            style={'height': '25px', 'margin-left': '20px'}
-                        ),
-
-                    ],
-                    className='pretty_container twelve columns'
-                ),
-            ],
-            className= "row flex-display",
-        ),
-        #----------------MIDDLE INPUTS FLEX ROW--------------------------------
-        #----------------START MIDDLE INPUT FLEX ROW---------------------------
         html.Div(
             [
                 html.Div(
@@ -490,8 +440,61 @@ layout = html.Div(
                             }
                         ),
                     ],
-                    className='pretty_container twelve columns'
+                    className='pretty_container four columns'
                 ),
+                html.Div(
+                    [   html.H5(
+                            html.B('Instructions'),
+                            style={"margin-bottom": "15px", "color": "maroon"},
+                        ),
+                        html.P(
+                            'This tool calculates the lumped transient temperature of steel under fire conditions using standad time-temperature curves. You can select unprotected or protected steel, and various input parameters can be changed.',
+                            style={"margin": "10px", "font-size": "20", "margin-left": "20px", 'margin-bottom':'15px'}
+                        ),
+                        html.P(
+                            'The ISO 834 time-temperature curve is given by:',
+                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
+                        ),
+                        html.Img(
+                            src='/assets/steel_eq1_mod.PNG',
+                            style={'height': '35px', 'margin-left': '20px', 'margin-bottom':'15px'}
+                        ),
+                        html.P(
+                            'The ASTM E119 time-temperature curve is approximated by:',
+                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
+                        ),
+                        html.Img(
+                            src='/assets/steel_eq2_mod.PNG',
+                            style={'height': '35px', 'margin-left': '20px', 'margin-bottom':'15px'}
+                        ),
+                        html.P(
+                            'The rate of change temperature of the unprotected steel is given by:',
+                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
+                        ),
+                        html.Img(
+                            src='/assets/steel_eq3_mod.PNG',
+                            style={'height': '35px', 'margin-left': '20px', 'margin-bottom':'15px'}
+                        ),
+                        html.P(
+                            'The rate of change temperature of the protected steel is given by:',
+                            style={"margin": "10px", "font-size": "20", "margin-left": "20px"}
+                        ),
+                        html.Img(
+                            src='/assets/steel_eq4_mod.PNG',
+                            style={'height': '35px', 'margin-left': '20px', 'margin-bottom':'15px'}
+                        ),
+
+                    ],
+                    className='pretty_container eight columns'
+                ),
+            ],
+            className= "row flex-display",
+        ),
+        #----------------MIDDLE INPUTS FLEX ROW--------------------------------
+        #----------------START MIDDLE INPUT FLEX ROW---------------------------
+        html.Div(
+            [
+
             ],
             className= "row flex-display",
         ),
@@ -500,11 +503,21 @@ layout = html.Div(
             [
                 html.Div(
                     [
+                        html.H5(
+                            html.B('Results:'),
+                            style={
+                            "margin-bottom": "15px",
+                            "color": "maroon"
+                            }
+                        ),
                         html.Div(
                             [
                                 html.Div(
                                     [
-                                        dcc.Graph(id='steel_graph'),
+                                        dcc.Graph(
+                                            id='steel_graph',
+                                            style={'responsive':'True','minHeight':'500px'}
+                                        ),
                                     ],
                                     className='column'
                                 ),
@@ -512,8 +525,19 @@ layout = html.Div(
                                     [
                                         dt.DataTable(
                                             id='steel_table',
-                                            style_table={'height': '300px', 'overflowY': 'auto'},
+                                            style_table={'height': '460px', 'overflowY': 'auto','margin-right':'20px'},
+                                            #style_table={'minHeight': '400px', 'overflowY': 'auto'},
                                             page_action='none',
+                                            style_cell_conditional=[
+                                                {'if': {'column_id': 'Time (sec)'},
+                                                 'width': '10%'},
+                                                {'if': {'column_id': 'Unprotected Temp. (\u00B0C)'},
+                                                 'width': '10%'},
+                                                {'if': {'column_id': 'Protected Temp. (\u00B0C)'},
+                                                 'width': '10%'}
+
+                                            ],
+                                            data=[]
                                         ),
                                     ],
                                     className='column'
@@ -528,6 +552,7 @@ layout = html.Div(
                 ),
             ],
             className='row flex-display',
+            id='steel_results_row'
         ),
         #----------------BOTTOM ACKNOWLEDGEMENTS ROW----------------------------
         html.Div(
@@ -549,6 +574,22 @@ layout = html.Div(
         html.Div(id='steel_comp_state',style={'display':'none'}),
     ]
 ), #---------------------END LAYOUT--------------------------------------------
+
+@app.callback(
+        Output('steel_results_row', 'style'),
+        [
+            Input('steel_comp_state', 'children'),
+        ],
+)
+def flame_toggle(state):
+
+    show = {'display':'block'}
+    hide = {'display':'none'}
+
+    if state == 'TRUE':
+        return show
+    else:
+        return hide
 
 
 @app.callback(
@@ -660,6 +701,16 @@ def steel_btn_execute(btn, time, section, dense, cp, emissive, curve, transfer, 
             ),
         ]
 
+        steel_columns = [
+            'Time (sec)',
+            'Unprotected Temp. (\u00B0C)',
+        ]
+        #dps = [round(i) for i in T_steel_protected]
+        dus = [round(k) for k in T_steel]
+        tr = [round(j,3) for j in t]
+
+        steel_df = pd.DataFrame(list(zip(tr,dus)), columns=steel_columns)
+
     if protected == 'True':
         steel_data = [
             dict(
@@ -682,6 +733,28 @@ def steel_btn_execute(btn, time, section, dense, cp, emissive, curve, transfer, 
             ),
         ]
 
+        steel_columns = [
+            'Time (sec)',
+            'Unprotected Temp. (\u00B0C)',
+            'Protected Temp. (\u00B0C)'
+        ]
+        dps = [round(i) for i in T_steel_protected]
+        dus = [round(k) for k in T_steel]
+        tr = [round(j,3) for j in t]
+
+        steel_df = pd.DataFrame(list(zip(tr,dus,dps)), columns=steel_columns)
+
     figure = dict(data=steel_data, layout=steel_layout)
 
-    return '', figure, 'TRUE',
+    # columnss=[{'name': 'Time (sec)', 'id': 'Height (m)'},
+    #           {'name': 'Unprotected Temp. (\u00B0C)', 'id': 'Unprotected Temp. (\u00B0C)'},
+    #           {'name': 'Protected Temp. (\u00B0C)', 'id': 'Protected Temp. (\u00B0C)'}]
+
+
+
+    steel_dtable = steel_df.to_dict('rows')
+    steel_ctable = [{'name': i, 'id': i} for i in steel_df.columns]
+
+
+
+    return '', figure, 'TRUE', steel_ctable, steel_dtable

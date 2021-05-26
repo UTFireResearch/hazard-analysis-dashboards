@@ -182,7 +182,7 @@ layout = html.Div(
             [
                 html.Div(
                     [   html.H5(
-                            html.B('Enter Input Parameters'),
+                            html.B('Input Parameters'),
                             style={"margin-bottom": "15px", "color": "maroon"},
                         ),
                         html.H6(
@@ -295,6 +295,21 @@ layout = html.Div(
             ],
             className= "row flex-display",
         ),
+
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.H6(
+                            id='flame_eMessage_p',
+                        ),
+                    ],
+                    className='pretty_container twelve columns',
+                ),
+            ],
+            className='row flex-display',
+            id='flame_eMessage_row'
+        ),
         #-------------------RESULTS ROW-----------------------------------------
         html.Div(
             [
@@ -308,62 +323,97 @@ layout = html.Div(
                             "color": "maroon"
                             }
                         ),
-                        html.H6(
-                            'Non-Dimensional HRR:',
-                            style={'margin-left':'15px'}
-                        ),
-                        html.P(
-                            'The characteristic fire size (Q*) is',
-                            style={'display':'inline-block', 'color':'black', 'padding-right':'5px', 'margin-left':'25px'},
-                        ),
-                        html.P(
-                            html.B(id='flame_char_size'),
-                            style={'display':'inline-block'},
-                        ),
-                        html.H6(
-                            'Heskestad Flame Height:',
-                            style={'margin-left':'15px'},
-                        ),
-                        html.P(
-                            html.B(id='flame_message1'),
-                            style={'margin-left':'25px'},
-                        ),
-                        html.P(
-                            html.B(id='flame_message2'),
-                            style={'margin-left':'25px'},
-                        ),
-                        # html.H6(
-                        #     'Heskestad and McCaffrey Plume Centerline Temperatures:',
-                        #     style={'margin-left':'15px', 'margin-top':'20px'}
-                        # ),
-                        dcc.Graph(
-                            id='centerline_graph',
-                            style={'margin-left':'20px', 'height':550, 'width':750}
+                        #----------------FLEX ROW INSIDE RESULTS CONTAINER------
+                        html.Div(
+                            [
+                                #---------TEXT RESULTS DIV----------------------
+                                html.Div(
+                                    [
+                                        html.H6(
+                                            'Non-Dimensional HRR:',
+                                            style={'margin-left':'15px'}
+                                        ),
+                                        html.P(
+                                            'The characteristic fire size (Q*) is',
+                                            style={'display':'inline-block', 'color':'black', 'padding-right':'5px', 'margin-left':'25px'},
+                                        ),
+                                        html.P(
+                                            html.B(id='flame_char_size'),
+                                            style={'display':'inline-block'},
+                                        ),
+                                        html.H6(
+                                            'Heskestad Flame Height:',
+                                            style={'margin-left':'15px'},
+                                        ),
+                                        html.P(
+                                            html.B(id='flame_message1'),
+                                            style={'margin-left':'25px'},
+                                        ),
+                                        html.P(
+                                            html.B(id='flame_message2'),
+                                            style={'margin-left':'25px'},
+                                        ),
+                                    ],
+                                    #style={'float':'left','display':'flex'},
+                                ),
+                                # html.H6(
+                                #     'Heskestad and McCaffrey Plume Centerline Temperatures:',
+                                #     style={'margin-left':'15px', 'margin-top':'20px'}
+                                # ),
+                                #--------------GRAPH SUB CONTAINER--------------
+                                html.Div(
+                                    [
+                                        dcc.Graph(
+                                            id='centerline_graph',
+                                            style={'margin-left':'20px', 'height':550, 'width':750}
+                                        ),
+                                    ],
+                                    style={'margin-left':'10px'}
+                                ),
+                                #-------------DATA TABLE SUB CONTAINER----------
+                                html.Div(
+                                    [
+                                        dt.DataTable(
+                                            id='flame_table',
+                                            columns = columntest,
+                                            data = [],
+                                            #fixed_rows={'headers': True},
+                                            style_cell_conditional=[
+                                                {'if': {'column_id': 'Height (m)'},
+                                                 'width': '30%'},
+                                                {'if': {'column_id': 'Heskestad Temp. (\u00B0C)'},
+                                                 'width': '35%'},
+                                                {'if': {'column_id': 'McCaffrey Temp. (\u00B0C)'},
+                                                 'width': '35%'}
+
+                                            ],
+                                            style_table={'height': '550px', 'minWidth':'500px', 'overflowY': 'auto'}
+                                        ),
+                                    ],
+                                    style={'margin-left':'15px'},
+                                ),
+                            ],
+                            className='row flex-display'
                         ),
                     ],
-                    className='pretty_container eight columns',
+                    className='pretty_container twelve columns',
                 ),
-                html.Div(
-                    [
-                        html.H5(
-                            html.B('Values:'),
-                            style={
-                            "margin-bottom": "15px",
-                            "color": "maroon"
-                            }
-                        ),
-                        dt.DataTable(
-                            id='flame_table',
-                            columns = columntest,
-                            data = [],
-                            fixed_rows={'headers': True},
-                            # style_table={'height': '100%', 'overflowY': 'auto'}
-                        ),
-                    ],
-                    className='pretty_container four columns'
-                )
+                # html.Div(
+                #     [
+                #         html.H5(
+                #             html.B('Values:'),
+                #             style={
+                #             "margin-bottom": "15px",
+                #             "color": "maroon"
+                #             }
+                #         ),
+                #     ],
+                #     className='pretty_container four columns'
+                # )
             ],
             className='row flex-display',
+            style={'display':'none'},
+            id='flame_results_row',
         ),
         # html.Div(
         #     [
@@ -400,13 +450,52 @@ layout = html.Div(
                 ),
             ],
             className= "row flex-display",
-
+        ),
+        html.Div(
+            [
+                html.Div(id='flame_comp_state',children='FALSE',style={"display": "none"}),
+            ],
+            style={'display':'none'},
         ),
     ],
 ), #---------------------END LAYOUT--------------------------------------------
+def flame_in_check(finlist):
+
+    if finlist[0] <= 0 or finlist[1] <= 0 or finlist[2] <= 0:
+        eMessage = 'Please ensure that all values are greater than zero'
+        return [False, eMessage]
+    else:
+        return [True, '']
+
+@app.callback(
+        [
+            Output('flame_results_row', 'style'),
+            Output('flame_eMessage_row','style'),
+        ],
+        [
+            Input('flame_comp_state', 'children'),
+        ],
+        [
+            State('flame_calc_button','n_clicks'),
+        ]
+)
+def visibility_toggle(state,btn):
+
+    show = {'display':'block'}
+    hide = {'display':'none'}
+
+    if state == 'TRUE' and btn > 0:
+        return show, hide
+    elif state != 'TRUE' and btn > 0:
+        return hide, show
+    else:
+        return hide, hide
+
 
 @app.callback(
     [
+        Output('flame_comp_state','children'),
+        Output('flame_eMessage_p','children'),
         Output('flame_char_size','children'),
         Output('flame_message1','children'),
         Output('flame_message2','children'),
@@ -431,7 +520,8 @@ def flame_calc_execute(btn, size, diameter, radFrac):
         'McCaffrey Temp. (\u00B0C)'
     ]
 
-    flame_complete = True
+    flame_complete1 = 'TRUE'
+    flame_complete2 = 'FALSE'
     flame_eMessage = ''
 
     flame_data = []
@@ -441,7 +531,9 @@ def flame_calc_execute(btn, size, diameter, radFrac):
 
     inList = [size, diameter, radFrac]
 
-    if btn > 0:
+    inCheck = flame_in_check(inList)
+
+    if btn > 0 and inCheck[0]:
 
         D = diameter # m
         Q = size # kW
@@ -560,7 +652,7 @@ def flame_calc_execute(btn, size, diameter, radFrac):
         dtable = df.to_dict('rows')
         ctable = [{'name': i, 'id': i} for i in df.columns]
 
-        return 'Success', message1, message2, flame_figure, dtable, ctable
+        return flame_complete1, inCheck[1], str(round(Q_star,3)), message1, message2, flame_figure, dtable, ctable
 
     else:
-        return 'Fail', '', '', flame_figure, [], []
+        return 'FALSE', inCheck[1], '', '', '', flame_figure, [], []

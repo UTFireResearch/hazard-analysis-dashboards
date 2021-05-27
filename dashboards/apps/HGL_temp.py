@@ -1,7 +1,8 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_table as dtab
+import dash_table as dt
+import pandas as pd
 from dash.dependencies import Input, Output, State
 from .controls import plot_layout
 
@@ -435,6 +436,7 @@ layout = html.Div(
                                 html.Button(
                                     'Calculate HGL Temperatures >>',
                                     id='HGL_submit',
+                                    n_clicks=0,
                                     style={
                                     "margin-left": '2px',
                                     "margin-bottom": '15px',
@@ -530,8 +532,9 @@ layout = html.Div(
             ],
             className= "row flex-display",
         ),
+        #------------------RESULTS FLEX ROW-------------------------------------
         html.Div(
-            [
+            [   #---------------------RESULTS PRETTY CONTAINER------------------
                 html.Div(
                     [
                         html.H5(
@@ -541,120 +544,153 @@ layout = html.Div(
                             "color": "maroon"
                             }
                         ),
-                        #DIV WITH OUTPUT DESCRIPTIVE STRINGS
                         html.Div(
                             [
+                                #------------DIV HOLDING STRING OUTPUTS-----------------
                                 html.Div(
-                                    [
+                                    [   #---------PENETRATION TIME ROW------------------
+                                        html.Div(
+                                            [
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            'Wall thermal penetration time:  ',
+                                                            style={'margin-right':'20px'}
+                                                        ),
+                                                    ],
+                                                    className='one-half column'
+                                                ),
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            id='HGL_String1'
+                                                        ),
+                                                    ],
+                                                    className='one-half column',
+                                                ),
+                                            ],
+                                            className='row flex-display',
+                                        ),
+                                        #----------HORIZONTAL RULE----------------------
+                                        html.Hr(),
+                                        #----------TIME EQUALITY ROW--------------------
                                         html.Div(
                                             [
                                                 html.P(
-                                                    'Wall thermal penetration time:  ',
-                                                    style={'margin-right':'20px'}
+                                                    html.B(id='HGL_String2'),
+                                                    style={'textAlign':'center'},
                                                 ),
-                                            ],
-                                            className='one-half column'
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.P(
-                                                    id='HGL_String1'
-                                                ),
-                                            ],
-                                            className='one-half column',
-                                        ),
-                                    ],
-                                    className='row flex-display',
-                                ),
-                                html.Hr(),
-                                html.Div(
-                                    [
-                                        html.P(
-                                            html.B(id='HGL_String2'),
-                                            style={'textAlign':'center'},
-                                        ),
 
+                                            ],
+                                            className='row flex-display',
+                                        ),
+                                        #-----------HORIZONTAL RULE---------------------
+                                        html.Hr(),
+                                        #------------EFFECTIVE COEFFICIENT ROW----------
+                                        html.Div(
+                                            [
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            'Effective heat transfer coefficient:  ',
+                                                            style={'margin-right':'20px'}
+                                                        ),
+                                                    ],
+                                                    className='one-half column'
+                                                ),
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            html.B(id='HGL_String3')
+                                                        ),
+                                                    ],
+                                                    className='one-half column',
+                                                ),
+                                            ],
+                                            className='row flex-display',
+                                        ),
+                                        html.Hr(),
+                                        html.Div(
+                                            [
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            'Total wall area:  ',
+                                                            style={'margin-right':'20px'}
+                                                        ),
+                                                    ],
+                                                    className='one-third column'
+                                                ),
+                                                html.Div(
+                                                    [
+                                                        html.P(
+                                                            html.B(id='HGL_String4')
+                                                        ),
+                                                    ],
+                                                    className='one-half column',
+                                                ),
+                                            ],
+                                            className='row flex-display',
+                                        ),
                                     ],
-                                    className='row flex-display',
+                                    id='HGL_dStrings',
+                                    style={
+                                        'color':'black',
+                                        'margin-left':'15px',
+                                        'margin-top':'40px',
+                                        'width':'30vw',
+                                        'height':'60vh',
+                                        #'display':'inline',
+                                    },
                                 ),
-                                html.Hr(),
                                 html.Div(
                                     [
-                                        html.Div(
-                                            [
-                                                html.P(
-                                                    'Effective heat transfer coefficient:  ',
-                                                    style={'margin-right':'20px'}
-                                                ),
-                                            ],
-                                            className='one-half column'
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.P(
-                                                    html.B(id='HGL_String3')
-                                                ),
-                                            ],
-                                            className='one-half column',
+                                        dcc.Graph(
+                                            id='HGL_graph',
+                                            style={'height':'65vh', 'width':'40vw'},
                                         ),
                                     ],
-                                    className='row flex-display',
+                                    style={
+                                        "height":'600px',
+                                        "width":'750px',
+                                        "padding-left":'10px',
+                                        "padding-right":'10px',
+                                        #'display':'inline',
+                                    },
                                 ),
-                                html.Hr(),
                                 html.Div(
                                     [
-                                        html.Div(
-                                            [
-                                                html.P(
-                                                    'Total wall area:  ',
-                                                    style={'margin-right':'20px'}
-                                                ),
+                                        dt.DataTable(
+                                            id='HGL_table',
+                                            data = [],
+                                            #fixed_rows={'headers': True},
+                                            style_cell_conditional=[
+                                                {'if': {'column_id': 'HRR (kW)'},
+                                                 'width': '50%'},
+                                                {'if': {'column_id': 'Gas Layer Temp. (\u00B0C)'},
+                                                 'width': '50%'},
                                             ],
-                                            className='one-half column'
-                                        ),
-                                        html.Div(
-                                            [
-                                                html.P(
-                                                    html.B(id='HGL_String4')
-                                                ),
-                                            ],
-                                            className='one-half column',
+                                            style_table={'height': '60vh', 'width':'18vw', 'overflowY': 'auto'}
                                         ),
                                     ],
-                                    className='row flex-display',
+                                    style={
+                                        'margin-left':'15px',
+                                        'padding-left':'10px',
+                                        'padding-right':'10px',
+                                        #'display':'inline',
+                                    },
                                 ),
                             ],
-                            id='HGL_dStrings',
-                            className='one-third column',
-                            style={'color':'black','margin-left':'15px','margin-top':'40px'},
+                            className='row flex-display',
                         ),
-                        html.Div(
-                            [
-                                dcc.Graph(id='HGL_graph'),
-                            ],
-                            style={
-                                "height":'450px',
-                                "width":'700px',
-                                "padding-left":'10px',
-                                "padding-right":'10px'
-                            },
-                            className='one-half column'
-                        ),
-                        # html.Div(
-                        #     [
-                        #         dtab.DataTable(
-                        #             id='table',
-                        #             columns
-                        #         )
-                        #     ],
-                        #     className='one-third column'
-                        # )
-
                     ],
                     id='HGL_results_container',
                     className='pretty_container twelve columns',
                 )
             ],
+            style={
+                'display':'float right',
+            },
             id='HGL_results_row',
             className='row flex-display',
         ),
@@ -671,6 +707,7 @@ layout = html.Div(
                     className='pretty_container twelve columns',
                 )
             ],
+            style={'display':'none'},
             id='HGL_error_row',
             className='row flex-display',
         ),
@@ -738,32 +775,37 @@ def HGL_visibility_toggle(Mcomp1, clicks):
         "display": "none"
         }
 
-    btn_hidden = {'display':'none'}
-
-    btn_shown = {'display':'block'}
-
-    return display_style, display_style
-
+    # btn_hidden = {'display':'none'}
     #
-    # if Mcomp1 == 'TRUE' and clicks > 0:
-    #     return display_style, hidden_style
+    # btn_shown = {'display':'block'}
     #
-    # if Mcomp1 == 'FALSE' and clicks == None:
-    #     return hidden_style, hidden_style
-    #
-    # if Mcomp1 == 'FALSE' and clicks > 0:
-    #     return hidden_style, display_style
+    # return display_style, display_style
+
+
+    if Mcomp1 == 'TRUE' and clicks > 0:
+        return display_style, hidden_style
+
+    elif Mcomp1 == 'FALSE' and clicks == None:
+        return hidden_style, hidden_style
+
+    elif Mcomp1 == 'FALSE' and clicks > 0:
+        return hidden_style, display_style
+    else:
+        return hidden_style, hidden_style
+
 
 @app.callback(
     [
         Output('HGL_eMessage','children'),
-        Output('HGL_sMessage','children'),
+        #Output('HGL_sMessage','children'),
         Output('HGL_graph','figure'),
         Output('HGL_comp_state1','children'),
         Output('HGL_String1','children'),
         Output('HGL_String2','children'),
         Output('HGL_String3','children'),
         Output('HGL_String4','children'),
+        Output('HGL_table','data'),
+        Output('HGL_table','columns'),
     ],
     [
         Input('HGL_submit','n_clicks'),
@@ -853,13 +895,25 @@ def HGL_btn_execut(btn, size, tIn, vWidth, vHeight, rWidth, rHeight, rLength, aT
         HGL_state = 'FALSE'
         HGL_figure = dict(data=HGL_data, layout=HGL_layout)
 
+    HGL_table_columns = [
+        'HRR (kW)',
+        'HGL Temp. (\u00B0C)',
+    ]
+    hgs = [round(i) for i in T_g]
+    hrs = [round(j,3) for j in hrrs]
+
+    HGL_table_df = pd.DataFrame(list(zip(hrs,hgs)), columns=HGL_table_columns)
+
+    HGL_dtable = HGL_table_df.to_dict('rows')
+    HGL_ctable = [{'name': i, 'id': i} for i in HGL_table_df.columns]
+
 
     HGL_String1 = f'{t_p} seconds'
     HGL_String2 = f'As a result, t >= t\u209A'
     HGL_String3 = f'{h_k} kW/m\u00b2'
     HGL_String4 = f'{A_T} m\u00b2'
 
-    return 'The error', 'The result', HGL_figure, HGL_state, HGL_String1, HGL_String2, HGL_String3, HGL_String4
+    return 'An error was encountered', HGL_figure, HGL_state, HGL_String1, HGL_String2, HGL_String3, HGL_String4, HGL_dtable, HGL_ctable
 
 
 # @app.callback(

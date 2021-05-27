@@ -43,7 +43,7 @@ layout = html.Div(
                             style={'margin-bottom': '5px'}
                         ),
                         html.H6(
-                            'Hot Gas Layer Temperature Calculator',
+                            'Flame Height and Plume Centerline Temperature Calculator',
                             style={'margin': '0px'}
                         )
                     ],

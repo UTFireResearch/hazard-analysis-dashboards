@@ -20,5 +20,6 @@ dependencies:
   - dnspython
   - pip:
     - gunicorn==19.9.0
+    - dash-extensions==0.0.51
 
 prefix: //miniconda3/envs/fire

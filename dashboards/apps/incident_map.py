@@ -47,7 +47,7 @@ incident_options = [
     for type in INCIDENTS
 ]
 
-YEAR_RANGE = [2006,2021]
+YEAR_RANGE = [2000,2023]
 
 styles = {
     'pre': {
@@ -139,25 +139,84 @@ layout = html.Div(
             }
         ), #-----------------------END HEADER DIV------------------------------
 
+
+        #======================DISCLAIMER ROW===================================
+        # html.Div(
+        #     [
+        #         html.Div(
+        #             [
+        #
+        #             ],
+        #             className='pretty_container twelve columns'
+        #         )
+        #     ],
+        #     className='row flex-display',
+        # ),
+
+        #=========================INTRODUCTION ROW==============================
         html.Div(
-            [
+            [   #==================INTRODUCTION PRETTY CONTAINER================
                 html.Div(
                     [
-                        html.H6(children=[html.I('PLEASE NOTE: The database behind this page is still under active construction and the number of inicidents is likely to grow rapidly. Check back regularly.')])
+                        html.H5(
+                            'Introduction'
+                        ),
+                        html.Div(
+                            [
+                                html.P("The world is rapidly undergoing the process of electrification. As a result, ever increasing numbers of batteries are finding their way into people's daily lives. It is therefore essential that we understand the impact and prevalence of battery fires. Currently, information about the reach and frequency of such events is split between many different industries, organizations, and jurisdictions. This makes it difficult for researchers and policymakers to identify patterns and make meaningful statements about the frequency of such events.  "),
+                                html.Hr(
+                                    style={'margin':'5px'}
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            [
+                                                    "This dashboard was created by The University of Texas Fire Research Group using data provided by Hazard Dynamics, a company providing expertise in fire and explosion phenomena. The data is collected from government regulatory authorities, consumer safety information, media coverage, and other sources. For more information about the methodology used in building the dataset, please contact ",
+                                                    html.I('info@hazarddynamics.com'),
+                                            ]
+                                        ),
+                                        html.Img(
+                                            src=("/assets/HazardDynamics_Horizontal1.png"),
+                                            style={'width':'20%','margin':'15px'},
+                                        ),
+                                    ],
+                                    className='row flex-display',
+                                ),
+
+                                # html.H6('Instructions:'),
+                                # html.Div(
+                                #     [
+                                #         #html.P('Currently incidents may be filtered by year, the type of battery application, and the type of incident (cell failure, fire, and explosion). '),
+                                #         html.P(
+                                #             html.Strong("Event Type")
+                                #         ),
+                                #         html.P("Cell failure events are those in which the battery fails and produces gas or flames, but the flames remain small, are short lived, and do not spread beyond the device. Fire events are those in which large sustained flames are produced and the flames spread beyond the device. Explosion events are those in which a large and rapid combustion occurs in a confined space producing an overpressure. Note -- Many news reports describe battery failures as 'explosions' due to the loud bang or pop that commonly accompanies a battery cell venting. These are not categorized as explosions by this dataset."),
+                                #     ],
+                                #     style={'margin-left': '20px','margin-right':'20px'},
+                                # ),
+                                html.P(
+                                    children=[
+                                        html.I('PLEASE NOTE: The dataset behind this page is updated on a regular basis. Check back for up to date information.'),
+                                    ]
+                                ),
+                            ],
+                        ),
                     ],
                     className='pretty_container twelve columns'
                 )
             ],
+            style={'padding-left':'5px'},
             className='row flex-display',
         ),
+
         #--------------------------FIRST CONTENT ROW----------------------------
         html.Div(
             [   #--------------------DATA HOLDER--------------------------------
-                html.Div(
-                    id='incident_data',
-                    children=get_incident_data_lean(),
-                    style={'display':'none'}
-                    ),
+                # html.Div(
+                #     id='incident_data',
+                #     children=get_incident_data_lean(),
+                #     style={'display':'none'}
+                #     ),
                 #------------FILTER OPTIONS PRETTY CONTAINER---------------------
                 html.Div(
                     [
@@ -459,6 +518,29 @@ layout = html.Div(
             id="third_row",
             className="row flex-display"
         ),
+        # html.Div(
+        #     html.Div(
+        #         [
+        #             html.Div(
+        #                 html.P(
+        #                     children=[
+        #                         'The dataset used to generate the information in this dashboard is provided courtesy of Hazard Dynamics which owns and maintains it. For more information about the methodology used in gathering data or to request access to data for other applications, please contact ',
+        #                         html.I('info@hazarddynamics.com'),
+        #                     ],
+        #                 ),
+        #                 #style={'maxWidth':'80%'},
+        #             ),
+        #
+        #         ],
+        #         style={'padding-left':'25px'},
+        #         className='pretty_container twelve columns',
+        #     ),
+        #     className='row flex-display',
+        #     style={
+        #         'padding-left':'10px',
+        #         'padding-right':'10px',
+        #     }
+        # ),
         #----------------------THIRD CONTENT ROW--------------------------------
         # html.Div(
         #     [
@@ -474,12 +556,16 @@ layout = html.Div(
 )
 #-----------------------END MAIN CONTENT DIV------------------------------------
 
+
+#=========================CALLBACKS SECTION=====================================
+
+
 def filter_incidents(df,year_slider,applications, incidents):
 
     dff = df[
         df['appID'].isin(applications)
         & df['Incident'].isin(incidents)
-        & (df["Date"] > dt.datetime(year_slider[0],1,1))
+        & (df["Date"] >= dt.datetime(year_slider[0],1,1))
         & (df["Date"] < dt.datetime(year_slider[1],1,1))
     ]
     return dff
@@ -545,14 +631,14 @@ def application_status(status):
         Output('yMin', 'children'),
     ],
     [
-        Input('incident_data', 'children'),
         Input("application_types", "value"),
         Input("incident_types", "value"),
         Input("year_slider", "value"),
     ],
 )
-def update_summary_text(data, application_types, incident_types, year_slider):
+def update_summary_text(application_types, incident_types, year_slider):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
@@ -582,7 +668,6 @@ def update_summary_text(data, application_types, incident_types, year_slider):
 @app.callback(
     Output('map_graph', 'figure'),
     [
-        Input('incident_data', 'children'),
         Input('application_types', 'value'),
         Input('incident_types', 'value'),
         Input('year_slider', 'value'),
@@ -591,8 +676,9 @@ def update_summary_text(data, application_types, incident_types, year_slider):
         State('map_graph', 'relayoutData')
     ],
 )
-def make_map_graph(data, applications, incidents, years, main_graph_layout):
+def make_map_graph(applications, incidents, years, main_graph_layout):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
@@ -615,7 +701,7 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
     fidf = fidf.dropna(subset=['Coordinates'])
 
     #SPLIT COORDINATES COLUMN OF THE DATAFRAME INTO TWO COLUMNS FOR LATITUDE AND LONGITUDE
-    fidf[['Latitude','Longitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
+    fidf[['Longitude','Latitude']] = pd.DataFrame(fidf.Coordinates.values.tolist(), index=fidf.index)
 
     tidf = fidf[['_id','Incident','Latitude','Longitude','Place']]
 
@@ -647,13 +733,14 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
 @app.callback(
     Output("count_graph","figure"),
     [
-        Input('incident_data', 'children'),
         Input('year_slider', 'value'),
         Input('application_types', 'value'),
         Input('incident_types', 'value'),
     ]
 )
-def make_count_graph(data,year_slider,applications, incidents):
+def make_count_graph(year_slider,applications, incidents):
+
+    data = get_incident_data_lean()
 
     #lDict_count = copy.deepcopy(lDict)
     lDict_count = dict(
@@ -742,11 +829,11 @@ def make_count_graph(data,year_slider,applications, incidents):
     ],
     [
         Input('map_graph', 'clickData'),
-        Input('incident_data', 'children')
     ]
 )
-def update_click(clickData, data):
+def update_click(clickData):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)

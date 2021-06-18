@@ -25,12 +25,18 @@ GAS_COLORS = dict(
 APPLICATIONS = {
     #FORMAT {'appID': 'User Friendly Label'}
     'Vehicle': 'Electric Vehicles',
+    'Mobility': 'Electric Mobililty',
+    'Marine': 'Marine Applications',
+    'Remote': 'Remote Control Devices',
+    'Robotics': 'Robotics',
     'Storage': 'Energy Storage',
     'Electronics': 'Personal Electronics',
     'Consumer': 'Consumer Devices',
+    'Backup': 'Battery Backup',
     'Tools': 'Power Tools',
     'Medical': 'Medical Devices',
     'Post-Life': 'Post-Life',
+    'Production': 'Battery Manufacturing',
     'Smoking': 'E-Cigarettes',
     'Toys': 'Toys',
     'Unknown': 'Unknown'

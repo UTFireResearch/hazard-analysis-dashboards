@@ -8,7 +8,7 @@ import dash_html_components as html
 import dash_table
 import pandas as pd
 
-from db.api import find
+from db.api import find, find_HD
 
 
 # Constants
@@ -36,7 +36,7 @@ Y_AXIS_OPTIONS = [{'label': 'Equivalence Ratio', 'value': 'phi'},
 # Collection Names
 MAIN_COLLECTION = 'main'
 FLAMMABILITY_COLLECTION = 'flammability'
-INCIDENT_COLLECTION = 'incidents'
+INCIDENT_COLLECTION = 'Battery_Incidents'
 
 
 def _clean_search_dict(search):
@@ -101,7 +101,7 @@ def get_flammability_data(experiment):
 def get_incident_data_lean():
     """Get data in incident collection in JSON serialized form."""
     cols = {'_id':1, 'date.stamp':1, 'place.placeName':1, 'place.location':1, 'incident':1, 'application.appID':1, 'description':1}
-    results = find(collection=INCIDENT_COLLECTION, search={}, projection=cols)
+    results = find_HD(collection=INCIDENT_COLLECTION, search={"Live": True}, projection=cols)
     # dList = list(results)
     # dFlat = pd.json_normalize(dList)
     # data = pd.DataFrame(dFlat)

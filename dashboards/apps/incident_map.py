@@ -212,11 +212,11 @@ layout = html.Div(
         #--------------------------FIRST CONTENT ROW----------------------------
         html.Div(
             [   #--------------------DATA HOLDER--------------------------------
-                html.Div(
-                    id='incident_data',
-                    children=get_incident_data_lean(),
-                    style={'display':'none'}
-                    ),
+                # html.Div(
+                #     id='incident_data',
+                #     children=get_incident_data_lean(),
+                #     style={'display':'none'}
+                #     ),
                 #------------FILTER OPTIONS PRETTY CONTAINER---------------------
                 html.Div(
                     [
@@ -631,14 +631,14 @@ def application_status(status):
         Output('yMin', 'children'),
     ],
     [
-        Input('incident_data', 'children'),
         Input("application_types", "value"),
         Input("incident_types", "value"),
         Input("year_slider", "value"),
     ],
 )
-def update_summary_text(data, application_types, incident_types, year_slider):
+def update_summary_text(application_types, incident_types, year_slider):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
@@ -668,7 +668,6 @@ def update_summary_text(data, application_types, incident_types, year_slider):
 @app.callback(
     Output('map_graph', 'figure'),
     [
-        Input('incident_data', 'children'),
         Input('application_types', 'value'),
         Input('incident_types', 'value'),
         Input('year_slider', 'value'),
@@ -677,8 +676,9 @@ def update_summary_text(data, application_types, incident_types, year_slider):
         State('map_graph', 'relayoutData')
     ],
 )
-def make_map_graph(data, applications, incidents, years, main_graph_layout):
+def make_map_graph(applications, incidents, years, main_graph_layout):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)
@@ -733,13 +733,14 @@ def make_map_graph(data, applications, incidents, years, main_graph_layout):
 @app.callback(
     Output("count_graph","figure"),
     [
-        Input('incident_data', 'children'),
         Input('year_slider', 'value'),
         Input('application_types', 'value'),
         Input('incident_types', 'value'),
     ]
 )
-def make_count_graph(data,year_slider,applications, incidents):
+def make_count_graph(year_slider,applications, incidents):
+
+    data = get_incident_data_lean()
 
     #lDict_count = copy.deepcopy(lDict)
     lDict_count = dict(
@@ -828,11 +829,11 @@ def make_count_graph(data,year_slider,applications, incidents):
     ],
     [
         Input('map_graph', 'clickData'),
-        Input('incident_data', 'children')
     ]
 )
-def update_click(clickData, data):
+def update_click(clickData):
 
+    data = get_incident_data_lean()
     flat_data = json.loads(data)
     flat_data = pd.json_normalize(flat_data)
     idf = pd.DataFrame(flat_data)

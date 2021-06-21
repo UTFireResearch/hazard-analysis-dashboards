@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import data_input, hazard_analysis, explosion_calculator, vent_calculator, incident_map, table, t_squared, mesh_size, HGL_temp, steel_heating, react_balance, flame_size
+from apps import data_input, hazard_analysis, explosion_calculator, vent_calculator, incident_map, table, t_squared, mesh_size, HGL_temp, steel_heating, react_balance, flame_size, burn_integral
 
 app.title = 'Hazard Tools'
 
@@ -41,6 +41,8 @@ def display_page(pathname):
         return react_balance.layout
     elif pathname == '/apps/HGL_temp':
         return HGL_temp.layout
+    elif pathname == '/apps/burn_integral':
+        return burn_integral.layout
     else:
         return html.Div([html.H3('404')])
 

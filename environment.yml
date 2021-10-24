@@ -18,6 +18,8 @@ dependencies:
   - scikit-image
   - scipy
   - dnspython
+  - plotly-express
+  - coolprop
   - pip:
     - gunicorn==19.9.0
     - dash-extensions==0.0.51

@@ -11,7 +11,7 @@ env:
 
 jobs:
   release:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu
 
     steps:
       - uses: actions/checkout@v1      

@@ -16,6 +16,29 @@ from scipy.interpolate import griddata
 #========================================================================================================
 
 class Fluid:
+    """
+    A class used to calculate fluid properties
+
+    Attributes
+    ----------
+    temperature : float 
+        temperature of fluid in K
+    pressure : float 
+        pressure of fluid in Pa
+    species : str
+        species, e.g. 'H2' or 'AIR'
+    diameter : float, optional
+        jet diameter
+    velocity : float, optional
+        velocity of fluid
+    mass_fraction: float, optional
+        mass fraction of H2 in fluid
+
+    Methods
+    -------
+    update(temperature, pressure, velocity, density, diameter, mass_flow_rate, mass_fraction, choked)
+        Updates fluid properties
+    """
     def __init__(self, temperature, pressure, species, diameter=None, velocity=None, mass_fraction=None):
 
         self.temperature = temperature
@@ -31,6 +54,29 @@ class Fluid:
     def update(self, temperature=None, pressure=None, velocity=None, density=None, diameter=None, mass_flow_rate=None,
                mass_fraction=None, choked=None):
 
+        """
+        Updates fluid object
+
+        Parameters
+        ----------
+        temperature : float , optional
+            temperature of fluid in K
+        pressure : float, optional
+            pressure of fluid in Pa
+        density : float, optional
+            fluid density in kg/m^3
+        diameter : float, optional
+            jet diameter in m
+        mass_flow_rate : float, optional
+            mass flow rate in kg/s
+        mass_fraction: float, optional
+            mass fraction of H2 in fluid
+        choked:  bool, optional
+            True if flow is choked
+        Returns
+        -------
+        None
+        """
         if choked is not None:
             self.choked = choked
 
@@ -64,6 +110,87 @@ class Fluid:
 
 
 class JetModel:
+    """
+    A class used to produce jet plots
+
+    Attributes
+    ----------
+    ambient_temperature : float 
+        ambient temperature of fluid in K
+    ambient_pressure : float
+        ambient pressure in Pa
+    release_temperature : float 
+        release temperature in K
+    release_pressure : float
+        release pressure in Pa
+    orifice_fiameter : float
+        orifice diameter in m
+    release angle : float
+        release angle in rad (0 is horizontal)
+    velocity : float, optional
+        velocity of fluid
+    point_along_pathline: float
+        point at which contour plot is plotted
+    contour_of_interest: float
+        H2 contour, e.g. 0.04 for 4%
+    velocity_if_not_sonic: float, optional
+        release velocity if not choked in m/s
+
+
+    Methods
+    -------
+    run()
+        Updates fluid properties
+    generate_all_plots()
+        Run all plots
+    _point_1()
+        Update jet at point 1
+    _point_2()
+        Update jet at point 2
+    _point_3()
+        Update jet at point 3
+    _point_4()
+        Update jet at point 4
+    _integration_zone(max_steps, S_max)
+        Integrate equations
+    _format_solution()
+        Formats integration solution
+    _calculate_entrainment()
+        Calculates E
+    _continuity_equation(rho_cl, B, V_cl, E)
+        Calculates RHS and LHS of continuity
+    _x_momentum_equation(rho_cl, V_cl, theta, B)
+        Calculates RHS and LHS of x momentum
+    _y_momentum_equation(rho_cl, V_cl, theta, B)
+        Calculates RHS and LHS of y momentum
+    _species_equation(rho_cl, Y_cl, B, V_cl)
+        Calculates RHS and LHS of species equations
+    _energy_equation(RHScont, rho_cl, V_cl, B, Y_cl, numB=5, numpts=500)
+        Calculates RHS and LHS of energy equations
+    _contour_data()
+        Formats data for plotting
+    _separation_distance()
+        Calculates x and y separation distance
+    centerline_velocity_plot()
+        Generates plot
+    centerline_mass_concentration_plot()
+        Generates plot
+    centerline_mole_concentration_plot()
+        Generates plot
+    theta_plot()
+        Generates plot
+    concentration_profile_plot()
+        Generates plot
+    contour_plot_1()
+        Generates plot
+    contour_plot_2()
+        Generates plot
+    _rotation_matrix(theta)
+        Used for concentration profile plot
+
+
+
+    """
     def __init__(self, ambient_temperature, ambient_pressure, release_temperature, release_pressure, orifice_diameter,
                  release_angle, min_concentration, point_along_pathline,
                  contour_of_interest, velocity_if_not_sonic=None):
@@ -81,6 +208,17 @@ class JetModel:
         self.ambient_fluid = Fluid(ambient_temperature, ambient_pressure, 'AIR')
 
     def run(self):
+        """
+        Runs model
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
         self._point_1()
         self._point_2()
         #self._point_3()
@@ -90,9 +228,32 @@ class JetModel:
         self._separation_distance()
 
     def generate_all_plots(self):
+        """
+        Generates all plots
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        All plots
+        """
         return self.centerline_velocity_plot(), self.centerline_mass_concentration_plot(), self.centerline_mole_concentration_plot(), self.theta_plot(), self.concentration_profile_plot(), self.contour_plot_1(), self.contour_plot_2()
 
     def _point_1(self):
+
+        """
+        Updates fluid object at point 1
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
 
         # enthalpy and entropy at source
         self.enthalpy_at_0 = cp.PropsSI(['H'], 'P', self.H2_fluid.pressure, 'T', self.H2_fluid.temperature, 'H2')
@@ -111,8 +272,6 @@ class JetModel:
                 velocity_from_energy_conservation = 0
             return velocity_from_energy_conservation - speed_of_sound
         
-      
-
         # Find if flow is choked   
         if self.H2_fluid.pressure > 1.9 * self.ambient_fluid.pressure:
             if self.velocity_if_not_sonic is not None:
@@ -136,6 +295,18 @@ class JetModel:
                                  velocity=self.velocity_if_not_sonic, choked=False)
 
     def _point_2(self):
+        """
+        Updates fluid object at point 2
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+
         # Only is choked, if not choked properties stay the same
         if self.H2_fluid.choked:
             # from notional nozzle model
@@ -149,6 +320,17 @@ class JetModel:
                                  velocity=velocity_at_2, mass_flow_rate=self.H2_fluid.mass_flow_rate)
 
     def _point_3(self):
+        """
+        Updates fluid object at point 3
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
 
         arbitrary_temperature = 47
 
@@ -179,6 +361,18 @@ class JetModel:
                                  mass_fraction=mass_fraction_H2_at_3)
 
     def _point_4(self):
+
+        """
+        Updates fluid object at point 4
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
         BE = self.H2_fluid.diameter / np.sqrt(
             2 * (2 * self.lam ** 2 + 1) / (
                     self.lam ** 2 * self.H2_fluid.density / self.ambient_fluid.density + self.lam ** 2 + 1))
@@ -205,6 +399,18 @@ class JetModel:
         self.conditions = [v_cl, BE, rho_cl, Y_cl, self.release_angle, initial_x, initial_y]
 
     def _integration_zone(self, max_steps=100000, Smax=np.inf):
+        """
+        Integrates NS
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+
         dS = 500 * self.orifice_diameter
         r = integrate.ode(self._gov_equations)
         r.set_integrator('dopri5', atol=1e-6, rtol=1e-6)
@@ -225,6 +431,17 @@ class JetModel:
         self.T = np.array(T)
 
     def _format_solution(self):
+        """
+        Formats integration solution
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
         MW = self.ambient_fluid.molecular_weight * self.H2_fluid.molecular_weight / (self.Y[:, 3] * (
                 self.ambient_fluid.molecular_weight - self.H2_fluid.molecular_weight) + self.H2_fluid.molecular_weight)
         mole_fraction = self.Y[:, 3] * MW / self.H2_fluid.molecular_weight
@@ -237,6 +454,25 @@ class JetModel:
         self.__solution__['S'] = self.T
 
     def _calculate_entrainment(self, V_cl, B, rho_cl, theta, alpha):
+        """
+        Calculates entrainment
+
+        Parameters
+        ----------
+        V_cl : float
+            centerline velocity
+        rho_cl : float
+            centerline density
+        theta : float
+            angle of curvature
+        alpha : float
+            entrainement coefficient
+
+        Returns
+        -------
+        E : float
+            entrainement
+        """
         FrL = V_cl ** 2 * rho_cl / (constant.g * B * abs(self.ambient_fluid.density - rho_cl))
         Fr = self.H2_fluid.velocity / np.sqrt(constant.g * self.H2_fluid.diameter * abs(
             self.ambient_fluid.density - self.H2_fluid.density) / self.H2_fluid.density)
@@ -258,6 +494,28 @@ class JetModel:
         return E
 
     def _continuity_equation(self, rho_cl, B, V_cl, E):
+        """
+        Calculates continuity
+
+        Parameters
+        ----------
+        rho_cl : float
+            centerline density
+        B : float
+            half-width
+        V_cl : float
+            centerline velocity
+        E : float
+            entrainement
+
+        Returns
+        -------
+        LHScont: array
+            array of coefficients for differentials
+
+        RHScont: float
+            RHS of equation
+        """
         LHScont = np.array([(self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B ** 2,  # d/dS(V_cl)
                             2 * (self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B * V_cl,  # d/dS(B)
                             self.lam ** 2 * B ** 2 * V_cl,  # d/dS(rho_cl)
@@ -268,6 +526,28 @@ class JetModel:
         return LHScont, RHScont
 
     def _x_momentum_equation(self, rho_cl, V_cl, theta, B):
+        """
+        Calculates x momentum
+
+        Parameters
+        ----------
+        rho_cl : float
+            centerline density
+        B : float
+            half-width
+        V_cl : float
+            centerline velocity
+        theta : float
+            curvature angle
+
+        Returns
+        -------
+        LHSxmom: array
+            array of coefficients for differentials
+
+        RHSxmom: float
+            RHS of equation
+        """
         LHSxmom = np.array(
             [(2 * self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B ** 2 * V_cl * np.cos(theta),  # d/dS(V_cl)
              (2 * self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B * V_cl ** 2 * np.cos(theta),  # d/dS(B)
@@ -280,6 +560,28 @@ class JetModel:
         return LHSxmom, RHSxmom
 
     def _y_momentum_equation(self, rho_cl, V_cl, theta, B):
+        """
+        Calculates y momentum
+
+        Parameters
+        ----------
+        rho_cl : float
+            centerline density
+        B : float
+            half-width
+        V_cl : float
+            centerline velocity
+        theta : float
+            curvature angle
+
+        Returns
+        -------
+        LHSymom: array
+            array of coefficients for differentials
+
+        RHSymom: float
+            RHS of equation
+        """
         LHSymom = np.array(
             [(2 * self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B ** 2 * V_cl * np.sin(theta),  # d/dS(V_cl)
              (2 * self.lam ** 2 * rho_cl + self.ambient_fluid.density) * B * V_cl ** 2 * np.sin(theta),  # d/dS(B)
@@ -292,6 +594,29 @@ class JetModel:
         return LHSymom, RHSymom
 
     def _species_equation(self, rho_cl, Y_cl, B, V_cl):
+        """
+        Calculates species
+
+        Parameters
+        ----------
+        rho_cl : float
+            centerline density
+        B : float
+            half-width
+        V_cl : float
+            centerline velocity
+        Y_cl : float
+            centerline mass concentration
+
+        Returns
+        -------
+        LHSspec: array
+            array of coefficients for differentials
+
+        RHSspec: float
+            RHS of equation
+        """
+
         LHSspec = np.array([B * Y_cl * rho_cl,  # d/dS(V_cl)
                             2 * V_cl * Y_cl * rho_cl,  # d/dS(B)
                             B * V_cl * Y_cl,  # d/dS(rho_cl)
@@ -303,6 +628,28 @@ class JetModel:
 
 
     def _energy_equation(self, RHScont, rho_cl, V_cl, B, Y_cl, numB=5, numpts=500):
+        """
+        Calculates energy
+
+        Parameters
+        ----------
+        rho_cl : float
+            centerline density
+        B : float
+            half-width
+        V_cl : float
+            centerline velocity
+        Y_cl : float
+            centerline mass concentration
+
+        Returns
+        -------
+        LHSener: array
+            array of coefficients for differentials
+
+        RHSener: float
+            RHS of equation
+        """
         h_amb = self.ambient_fluid.specific_heat * self.ambient_fluid.temperature
         Cp_fluid = cp.PropsSI(['C'], 'P', float(self.H2_fluid.pressure), 'T', float(self.H2_fluid.temperature), 'H2')
         r = np.append(np.array([0]), np.logspace(-5, np.log10(numB * B), numpts))
@@ -349,6 +696,22 @@ class JetModel:
         return LHSener, RHSener
 
     def _gov_equations(self, S, ind_vars, alpha=0.082):
+        """
+        Puts governing equations into matrix form
+
+        Parameters
+        ----------
+        ind_vars : array
+            centerline density
+        alpha : float
+            coefficient needed for calculatin entrainement
+
+        Returns
+        -------
+        dz: array
+           array containing dV_cl/dS,  drho_cl/dS,  dY_cl/dS,  dB_cl/dS,  dtheta/dS,  dx/dS,  dy/dS
+        """
+    
         [V_cl, B, rho_cl, Y_cl, theta, x, y] = ind_vars
         E = self._calculate_entrainment(V_cl, B, rho_cl, theta, alpha)
         # governing equations:
@@ -375,70 +738,130 @@ class JetModel:
         return dz
 
     def centerline_velocity_plot(self):
-        fig = px.line( x = self.__solution__['S'],
-              y = self.__solution__['V_cl'],
+        """
+        Plots centerline velocity
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
+        df = pd.DataFrame({'S (m)':self.__solution__['S'], 'velocity (m/s)':self.__solution__['V_cl']})
+        fig = px.line( df,
+              x = 'S (m)',y ='velocity (m/s)',
               title = 'Centerline velocity along path')
 
-        fig['data'][0]['showlegend']=False
+        fig['data'][0]['showlegend']=True
         fig['data'][0]['name'] = 'Velocity'
         fig.update_layout(xaxis_title='S (m)', yaxis_title = 'V_cl (m/s)', font=dict(family="Courier New, monospace",
         size=18,
         color="RebeccaPurple"
     )
 )
-        # fig.show()
+        fig.show()
         return fig
 
     def centerline_mass_concentration_plot(self):
-        fig = px.line( x = self.__solution__['S'],
-              y = self.__solution__['Y_cl'],
+        """
+        Plots centerline mass concentraion
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
+        df = pd.DataFrame({'S (m)':self.__solution__['S'], 'mass concentration':self.__solution__['Y_cl']})
+        fig = px.line(df, x ='S (m)',
+              y = 'mass concentration',
               title = 'Centerline mass concentration along path')
 
-        fig['data'][0]['showlegend']=False
+        fig['data'][0]['showlegend']=True
         fig['data'][0]['name'] = 'Mass concentration'
         fig.update_layout(xaxis_title='S (m)', yaxis_title = 'Y_cl (m/s)', font=dict(family="Courier New, monospace",
         size=18,
         color="RebeccaPurple"
     )
 )
-        # fig.show()
-        return fig
+        fig.show()
 
 
     def centerline_mole_concentration_plot(self):
+        """
+        Plots centerline mole concentraion
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
 
         MW = self.ambient_fluid.molecular_weight * self.H2_fluid.molecular_weight / (self.__solution__['Y_cl'] * (
                 self.ambient_fluid.molecular_weight - self.H2_fluid.molecular_weight) + self.H2_fluid.molecular_weight)
         mole_concentration = self.__solution__['Y_cl'] * MW / self.H2_fluid.molecular_weight
-
-        fig = px.line( x = self.__solution__['S'], y = mole_concentration, title = 'Centerline mole concentration along path')
-
-        fig['data'][0]['showlegend']=False
+        df = pd.DataFrame({'S (m)':self.__solution__['S'], 'mole concentration': mole_concentration})
+        fig = px.line(df, x='S (m)', y = 'mole concentration', title = 'Centerline mole concentration along path')
+        fig['data'][0]['showlegend']=True
         fig['data'][0]['name'] = 'Mole concentration'
         fig.update_layout(xaxis_title='S (m)', yaxis_title = 'X_cl (m/s)', font=dict(family="Courier New, monospace",
         size=18,
         color="RebeccaPurple"
     )
 )
-        # fig.show()
+        fig.show()
         return fig
 
     def theta_plot(self):
+        """
+        Plots theta
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
         fig = px.line( x = self.__solution__['S'],
               y = self.__solution__['theta'],
               title = 'Curve angle')
-        fig['data'][0]['showlegend']=False
+        fig['data'][0]['showlegend']=True
         fig['data'][0]['name'] = 'Theta'
         fig.update_layout(xaxis_title='S (m)', yaxis_title = 'Theta (rad)', font=dict(family="Courier New, monospace",
         size=18,
         color="RebeccaPurple"
     )
 )
-        # fig.show()
+        fig.show()
         return fig
 
 
     def concentration_profile_plot(self):
+        """
+        Plots qualitative concentration profile
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
         nums = np.linspace(30, len(self.__solution__['S']) - 1, 10)
         nums = np.round(nums).astype(int)
         r = np.linspace(-2 * self.__solution__['B'], 2 * self.__solution__['B'], 100).reshape(100, len(
@@ -449,7 +872,7 @@ class JetModel:
             -r ** 2 / (self.__solution__['B'] ** 2 * self.lam ** 2)) + self.ambient_fluid.density
         Y_concentration = 1 / rho * rho_cl * self.__solution__['Y_cl'] * np.exp(
             -r ** 2 / (self.__solution__['B'] ** 2 * self.lam ** 2))
-        R = self.rotation_matrix(self.__solution__['theta'])
+        R = self._rotation_matrix(self.__solution__['theta'])
         # multiply by 200 so profiles don't look so small
         transformed_coords_cons = np.array([r, Y_concentration * 200]).T @ R.T
     
@@ -461,7 +884,7 @@ class JetModel:
         
         for num in nums:
             fig.add_trace(go.Scatter(x=x_values[:,num],y=y_values[:,num],fill='toself',  fillcolor='rgba(255, 0, 0, 0.1)',
-                    hoveron = 'points+fills', # select where hover is active
+                    hoverinfo = 'skip',
                     line_color='red', showlegend=False))
         fig['data'][0]['showlegend']=True
         fig['data'][0]['name'] = 'Qualitative concentration profile'
@@ -471,12 +894,26 @@ class JetModel:
         color="RebeccaPurple"
     )
 )
-        # fig.show()
-        return fig
-        
+        fig.show()
 
 
     def _contour_data(self):
+        """
+        Plots centerline mass concentration
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        x : array
+            array of x coordinates
+        y : array
+            array of y coordinate
+        X : array
+            mole concentration corresponding to x and y coords
+        """
         iS_ = np.arange(len(self.__solution__['S']))
         poshalf = np.logspace(-5, np.log10(3 * np.max(self.__solution__['B'])))
         r_ = np.concatenate((-1.0 * poshalf[::-1], [0], poshalf))
@@ -496,6 +933,19 @@ class JetModel:
         return x, y, X_concentration
 
     def _separation_distance(self):
+        """
+        Calculates separation distance
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        """
+
         x, y, X_concentration = self._contour_data()
         contour = plt.contour(x, y, X_concentration, levels=[self.contour_of_interest], colors='white', alpha=1,
                               linewidths=4)
@@ -527,6 +977,18 @@ class JetModel:
         self.max_y_coords = line[y_arg, :]
 
     def contour_plot_1(self):
+        """
+        Plots contour parallel to S
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
         x, y, X_concentration = self._contour_data()
         positions = np.vstack([x.ravel(), y.ravel()])
         x = positions[0,:]
@@ -553,6 +1015,7 @@ class JetModel:
             )))
         data = [trace]
         fig = go.Figure(data, layout_yaxis_range=[-0.5,0.5], layout=layout)
+        fig.update_traces(hoverinfo = 'text')
         fig.update_yaxes(
     scaleanchor = "x",
     scaleratio = 1,
@@ -563,11 +1026,23 @@ class JetModel:
         color="RebeccaPurple"
     )
 )
-        # fig.show()
+        fig.show()
         return fig
 
 
     def contour_plot_2(self):
+        """
+        Plots contour perpendicular to S
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        fig : object
+            plot
+        """
         S_idx = np.argmin(np.abs(self.point_along_pathline - self.__solution__['S']))
         x_ = np.linspace(-5, 5, num=1500)
         y_ = np.linspace(-5, 5, num=1500)
@@ -590,16 +1065,17 @@ class JetModel:
 )
         trace = go.Contour(x=x_, y=y_, z = X_concentration, colorscale ='amp', line_smoothing=0.85, contours=dict(
             coloring ='heatmap',
-            showlabels = True, # show labels on contours
-            labelfont = dict( # label font properties
+            showlabels = True, 
+            labelfont = dict( 
                 size = 12,
                 color = 'white',
             )))
         data = [trace]
         fig = go.Figure(data, layout_yaxis_range=[-0.2,0.2], layout=layout)
         fig.update_yaxes(
-            scaleanchor = "x",
-            scaleratio = 1,)
+    scaleanchor = "x",
+    scaleratio = 1,
+  )
         fig.update_xaxes(range=[-0.1, 0.1])
         fig.update_yaxes(automargin=True)
         fig.update_layout(font=dict(family="Courier New, monospace",
@@ -608,12 +1084,29 @@ class JetModel:
     )
 )
         
-        # fig.show()
+        fig.show()
+        
         return fig
 
-    def rotation_matrix(self, theta):
-        return np.array([[np.cos(theta - np.pi / 2), -np.sin(theta - np.pi / 2)],
+    def _rotation_matrix(self, theta):
+        """
+        Calculates rotation matrix for concentration profile plot
+
+        Parameters
+        ----------
+        theta : float, array
+            angle
+
+        Returns
+        -------
+        R : array
+            rotation matrix
+
+        """
+        R = np.array([[np.cos(theta - np.pi / 2), -np.sin(theta - np.pi / 2)],
                          [np.sin(theta - np.pi / 2), np.cos(theta - np.pi / 2)]])
+
+        return R
 
 #============================END PLOTLY VERSION OF THE CODE=======================
 #=================================================================================

@@ -2,6 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import warnings
 import numpy as np
+import pandas as pd
 
 from scipy.interpolate import griddata
 from CoolProp import CoolProp as cp
@@ -686,6 +687,11 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
 
         h2_hidden_style = {'display':'none'}
         h2_shown_style = {'display': 'block'}
+
+        # Write to csv file
+        df = pd.DataFrame(Jet.__solution__)
+        df.to_csv('raw_data.csv', index=False)
+
 
         return_style = h2_shown_style if h2_button_clicks else h2_hidden_style
 

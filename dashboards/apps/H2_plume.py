@@ -108,10 +108,16 @@ layout = html.Div(
                             [
                                 html.P("There are currently substanital investments being made to convert many industries from conventional fuels sources to hydrogen as part of efforts to reduce carbon emissions. With this in mind, safety considerations around hydrogen leaks with only become more important."),
                                 html.P("The following model estimates concentration, velocity, density, and position of a hydrogen plume based on a number of user provided parameters."),
+                                html.P("The model used is based on ",style={'display': 'inline-block',"margin-right": "5px"}),  html.A(" HyRAM", href='https://energy.sandia.gov/programs/sustainable-transportation/hydrogen/hydrogen-safety-codes-and-standards/hydrogen-risk-assessment-model-hyram/', target="_blank",style={'display':'inline-block',"margin-right": "5px"}), html.P("and Houf and Winters'",style={'display': 'inline-block',"margin-right": "5px"}), html.A("paper.", href='https://www.sciencedirect.com/science/article/pii/S0360319913001377?casa_token=lWzTubH3DWUAAAAA:gkbb0gr7bloNHM3Ewq9A1jXM6jSNbE3NAL2WjnAHYBCm9k4TBOaDVjJJ3BwPUx3Vud436604LQ', target="_blank",style={'display':'inline-block'}),
+                                
+                                
+                                
+                                 #HyRAM and Houf and Winters' paper."),
                                 html.Hr(
                                     style={'margin':'5px'}
                                 ),
-                                html.P("This tool was developed by Juliette Franqueville and is maintained by The University of Texas Fire Research Group."),
+                                
+                                html.P("This tool was developed by",style={'display': 'inline-block',"margin-right": "5px"}), html.A("Juliette Franqueville", href='https://www.linkedin.com/in/juliette-franqueville-402a6a157/', target="_blank",style={'display': 'inline-block',"margin-right": "5px"}), html.P("and is maintained by The University of Texas Fire Research Group.",style={'display': 'inline-block',"margin-right": "5px"}),
                                 html.P(
                                     children=[
                                         html.I('PLEASE NOTE: The model may take up to 15 seconds to run. Please wait before clicking the run button again or refreshing the page.'),
@@ -196,7 +202,7 @@ layout = html.Div(
                         ),
                         html.Div(
                             [
-                                html.Div(["Release Angle* (rad)"]),
+                                html.Div(["Release Angle* (°)"]),
                                 html.Div(
                                     [
                                         dcc.Input(
@@ -543,15 +549,6 @@ layout = html.Div(
                             style={"display": "grid", "grid-template-columns": "50% 50%"}
                         ),
 
-                    #html.Div(
-
-                     # html.Div( 
-                         # [
-                         #     html.Button("Download csv", id="btn"), 
-                        #  Download(id="download")
-                        #  ]),
-
-                        #  id="btn_div" )
                         html.Div(
                             [
                                 html.Button(
@@ -578,14 +575,15 @@ layout = html.Div(
                     [
                         html.H5(
                                 html.B('Output Plots'),
-                                # style={"margin-bottom": "15px"},
+                                #style={'padding-bottom':'100px'}
                         ),
+                        html.P("Below are several plots showing centerline quantities and concentration contours. You can zoom in and out by hovering over the plots and using the zoom buttons. You can save the plots by clicking the camera button.")
                     ],
                     className='pretty_container twelve columns',
                 )
             ],
             className='row flex-display',
-            id='h2_output_header',
+            id='h2_output_title',
             style={'display':'None'}
         ),
         html.Div(
@@ -659,12 +657,6 @@ layout = html.Div(
 
 #========================PLOTLY VERSION OF THE CALLBACK=========================================
 #===============================================================================================\
-#data = np.column_stack((np.arange(10), np.arange(10) * 2))
-#df = pd.DataFrame(columns=["a column", "another column"], data=data)
-
-
-
-
 
 @app.callback(
     [
@@ -681,6 +673,8 @@ layout = html.Div(
         Output('h2_plot7', 'figure'),
         Output('raw_data','data'),
         Output('h2_output_row', 'style'),
+        Output('h2_output_title', 'style'),
+
     ],
     [
         Input('H2_run_button', 'n_clicks'),
@@ -705,6 +699,7 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
     if h2_button_clicks < 1:
         raise PreventUpdate
     else:
+        release_angle = np.pi/180 * release_angle
         args = [ambient_temperature, ambient_pressure, release_temperature, release_pressure, orifice_diameter,
                     release_angle, min_concentration, point_along_pathline,
                     contour_of_interest, velocity_if_not_sonic]
@@ -731,8 +726,10 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
         data = df.to_json()
 
         return_style = h2_shown_style if h2_button_clicks else h2_hidden_style
+        return_style_title = h2_shown_style if h2_button_clicks else h2_hidden_style
 
-        return choked_flow, jet_pressure, horizontal_seperation, vertical_seperation, figures[0], figures[1], figures[2], figures[3], figures[4], figures[5], figures[6],data, return_style 
+
+        return choked_flow, jet_pressure, horizontal_seperation, vertical_seperation, figures[0], figures[1], figures[2], figures[3], figures[4], figures[5], figures[6],data, return_style, return_style_title 
 
 @app.callback(
         Output('btn', 'style'),

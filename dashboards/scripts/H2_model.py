@@ -1005,7 +1005,7 @@ class JetModel:
         zi[zi < 0.00001] = 0
         
             
-        layout = go.Layout(title = 'Mole concentration contour plot along pathline',xaxis = go.XAxis(title = 'x (m)', showgrid=False),yaxis = go.YAxis(
+        layout = go.Layout(title = 'Mole concentration contour <br> plot along pathline',xaxis = go.XAxis(title = 'x (m)', showgrid=False),yaxis = go.YAxis(
         title = 'y (m)',showgrid=False
     )
 )

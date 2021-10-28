@@ -490,7 +490,7 @@ layout = html.Div(
 
                         html.Div(
                             [
-                                html.Div(["Throat Pressure"]),
+                                html.Div(["Throat Pressure (Pa)"]),
                                 html.Div(
                                     [
                                         dcc.Input(
@@ -508,7 +508,7 @@ layout = html.Div(
                         ),
                         html.Div(
                             [
-                                html.Div(["Horizontal Seperation Distance"]),
+                                html.Div(["Horizontal Seperation Distance (m)"]),
                                 html.Div(
                                     [
                                         dcc.Input(
@@ -526,7 +526,7 @@ layout = html.Div(
                         ),
                         html.Div(
                             [
-                                html.Div(["Vertical Seperation Distance"]),
+                                html.Div(["Vertical Seperation Distance (m)"]),
                                 html.Div(
                                     [
                                         dcc.Input(
@@ -543,12 +543,26 @@ layout = html.Div(
                             style={"display": "grid", "grid-template-columns": "50% 50%"}
                         ),
 
+                    #html.Div(
 
-                      html.Div( 
-                          [
-                              html.Button("Download csv", id="btn"), 
-                          Download(id="download")
-                          ])
+                     # html.Div( 
+                         # [
+                         #     html.Button("Download csv", id="btn"), 
+                        #  Download(id="download")
+                        #  ]),
+
+                        #  id="btn_div" )
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Download CSV File",
+                                    id='btn',
+                                    #style={'margin':'15px'},
+                                ),
+                                Download(id="download")
+                            ],
+                            id="csv_btn",
+                        ),
     
                     ],
                     className='pretty_container eleven columns',
@@ -638,7 +652,8 @@ layout = html.Div(
             id = 'h2_output_row',
             style={'display':'none'}
         ),
-        dcc.Store(id='raw_data')
+        dcc.Store(id='raw_data'),
+        
     ]
 )
 
@@ -703,7 +718,7 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
 
         #Output values
         choked_flow = 'yes' if Jet.H2_fluid.choked else 'no'
-        jet_pressure = Jet.pressure_at_1 if Jet.H2_fluid.choked else ambient_pressure
+        jet_pressure = np.round(Jet.pressure_at_1 if Jet.H2_fluid.choked else ambient_pressure)
         horizontal_seperation = np.round(Jet.max_x_coords[0], 3)
         vertical_seperation = np.round(Jet.max_y_coords[1], 3)
 
@@ -719,11 +734,27 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
 
         return choked_flow, jet_pressure, horizontal_seperation, vertical_seperation, figures[0], figures[1], figures[2], figures[3], figures[4], figures[5], figures[6],data, return_style 
 
+@app.callback(
+        Output('btn', 'style'),
+        [
+        Input('H2_run_button', 'n_clicks'),
+        ])
+def visibility_toggle(first_click):
+    btn_hidden = {'display':'none'}
+    btn_shown = {'display':'block'}
 
+    #--DISPLAY STATE OF THE RESULTS CONTAINER
+    
+    if first_click is None or first_click == 0:
+        state = btn_hidden
+    else:
+        state = btn_shown
+    return state
+    
 @app.callback(Output('download','data'),[Input('btn','n_clicks'),Input('raw_data','data')])
 def generate_csv(n_clicks,raw):
     # I had to write this line otherwise it would automatically download the file even if you didn't click the download button...seems hacky
-    if n_clicks is None:
+    if n_clicks is None or raw == None:
         raise PreventUpdate
     json_data = json.loads(raw)
     df = pd.DataFrame.from_dict(json_data, orient='columns')

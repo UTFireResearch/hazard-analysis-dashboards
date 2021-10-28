@@ -2,6 +2,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 import warnings
 import numpy as np
+import pandas as pd
+import json
 
 from scipy.interpolate import griddata
 from CoolProp import CoolProp as cp
@@ -14,6 +16,10 @@ from app import app
 from .callbacks import *  # noqa
 from dash.exceptions import PreventUpdate
 from scripts.H2_model import Fluid, JetModel # OtherJetModel
+from dash_extensions import Download
+from dash_extensions.snippets import send_data_frame
+
+
 
 
 #====================PLOTLY VERSION SPECIFIC DEPENDENCIES=======================
@@ -37,7 +43,7 @@ import matplotlib.pyplot as plt
 
 
 #---------------------MAIN LAYOUT CONTAINER-------------------------------------
-layout = html.Div(
+layout = html.Div( 
     [
         #-------------------HEADER BAR CONTAINER--------------------------------
         html.Div(
@@ -77,14 +83,8 @@ layout = html.Div(
                             href="/apps/table",
                             style={"float": "right", 'width': '250px'}
                         ),
-                        # html.A(
-                        #     html.Button("Vent Sizing",
-                        #                 id="vent-sizing",
-                        #                 style={'width': '100%'}
-                        #     ),
-                        #     href="/apps/vent_calculator",
-                        #     style={"float": "right","width": '250px'}
-                        # )
+                        
+
                     ],
                     className="one-third column",
                     id="button",
@@ -458,6 +458,7 @@ layout = html.Div(
                     className='pretty_container two columns',
                     style={'padding':'25px'}
                 ),
+                
                 #=============OUPUT PARAMETERS PRETTY CONTAINER==================
                 html.Div(
                     [
@@ -483,6 +484,10 @@ layout = html.Div(
                             ],
                             style={"display": "grid", "grid-template-columns": "50% 50%"}
                         ),
+
+                        
+
+
                         html.Div(
                             [
                                 html.Div(["Throat Pressure"]),
@@ -537,6 +542,14 @@ layout = html.Div(
                             ],
                             style={"display": "grid", "grid-template-columns": "50% 50%"}
                         ),
+
+
+                      html.Div( 
+                          [
+                              html.Button("Download csv", id="btn"), 
+                          Download(id="download")
+                          ])
+    
                     ],
                     className='pretty_container eleven columns',
                     style={'padding-right':'25px', 'padding-left':'25px'}
@@ -625,11 +638,18 @@ layout = html.Div(
             id = 'h2_output_row',
             style={'display':'none'}
         ),
+        dcc.Store(id='raw_data')
     ]
 )
 
 #========================PLOTLY VERSION OF THE CALLBACK=========================================
-#===============================================================================================
+#===============================================================================================\
+#data = np.column_stack((np.arange(10), np.arange(10) * 2))
+#df = pd.DataFrame(columns=["a column", "another column"], data=data)
+
+
+
+
 
 @app.callback(
     [
@@ -644,11 +664,14 @@ layout = html.Div(
         Output('h2_plot5', 'figure'),
         Output('h2_plot6', 'figure'),
         Output('h2_plot7', 'figure'),
-        Output('h2_output_row', 'style')
+        Output('raw_data','data'),
+        Output('h2_output_row', 'style'),
     ],
     [
         Input('H2_run_button', 'n_clicks'),
     ],
+
+   
     [
         State('H2_temp', 'value'),
         State('H2_pressure','value'),
@@ -687,6 +710,22 @@ def H2_code_run(h2_button_clicks, release_temperature, release_pressure, orifice
         h2_hidden_style = {'display':'none'}
         h2_shown_style = {'display': 'block'}
 
+        # Write to csv file
+        df = pd.DataFrame(Jet.__solution__)
+        #data = send_data_frame(df.tjsono_csv, filename="raw_data.csv")
+        data = df.to_json()
+
         return_style = h2_shown_style if h2_button_clicks else h2_hidden_style
 
-        return choked_flow, jet_pressure, horizontal_seperation, vertical_seperation, figures[0], figures[1], figures[2], figures[3], figures[4], figures[5], figures[6], return_style 
+        return choked_flow, jet_pressure, horizontal_seperation, vertical_seperation, figures[0], figures[1], figures[2], figures[3], figures[4], figures[5], figures[6],data, return_style 
+
+
+@app.callback(Output('download','data'),[Input('btn','n_clicks'),Input('raw_data','data')])
+def generate_csv(n_clicks,raw):
+    # I had to write this line otherwise it would automatically download the file even if you didn't click the download button...seems hacky
+    if n_clicks is None:
+        raise PreventUpdate
+    json_data = json.loads(raw)
+    df = pd.DataFrame.from_dict(json_data, orient='columns')
+    return send_data_frame(df.to_csv, filename="raw_data.csv")
+ 

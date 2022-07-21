@@ -791,6 +791,6 @@ def generate_csv(n_clicks,raw):
 #   # I had to write this line otherwise it would automatically download the file even if you didn't click the download button...seems hacky
     if n_clicks is None or raw == None:
         raise PreventUpdate
-        json_data = json.loads(raw)
-        df = pd.DataFrame.from_dict(json_data, orient='columns')
-        return send_data_frame(df.to_csv, filename="raw_data.csv")
+    json_data = json.loads(raw)
+    df = pd.DataFrame.from_dict(json_data, orient='columns')
+    return send_data_frame(df.to_csv, filename="raw_data.csv")
